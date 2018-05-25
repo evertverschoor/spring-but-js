@@ -1,0 +1,18 @@
+{
+  "name": "spring-but-js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "test": "jasmine-node test"
+  },
+  "author": "Evert Verschoor",
+  "license": "ISC",
+  "devDependencies": {
+    "jasmine-node": "^1.14.5"
+  },
+  "dependencies": {
+    "tmp": "0.0.33"
+  }
+}
