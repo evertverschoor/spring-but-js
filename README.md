@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/evertverschoor/spring-but-js.svg?branch=master)](https://travis-ci.org/evertverschoor/spring-but-js)
+
 # Spring but JS
 Use Spring features in NodeJS!
 
