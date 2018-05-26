@@ -1,6 +1,10 @@
 const fs = require('fs');
 
-function ComponentScanner(SpringButJs, logger) {
+function ComponentScanner(_parser, _logger) {
+
+    const
+        parser = _parser,
+        logger = _logger;
 
     this.scanDirectory = scanDirectory;
 
@@ -33,7 +37,7 @@ function ComponentScanner(SpringButJs, logger) {
                 files.forEach(file => {
                     readFile(path + '/' + file).then(f => {
                         checkSyntax(f);
-                        SpringButJs.parse(f);
+                        parser.parse(f.toString());
 
                         parsedFiles++;
                         if(parsedFiles >= files.length) {

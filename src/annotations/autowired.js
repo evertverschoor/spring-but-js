@@ -1,4 +1,8 @@
 function hasValidAutowireableField(line) {
+    if(line.toString) {
+        line = line.toString();
+    }
+
     line = line.trim();
     
     let isProperString = typeof line === 'string' && line.length > 0,
@@ -9,46 +13,28 @@ function hasValidAutowireableField(line) {
     return isProperString && (hasLetOrVar || hasThisAssignment) && !hasConst;
 }
 
-function getVariableName(line) {
-    line = line.trim();
+function parse(annotationController) {
+    const applicableLine = annotationController.getLineOfApplication();
 
-    let cutOffAtFront = line.replace('let ', '').replace('var ', '').replace('this.', ''),
-        assignmentIndex = cutOffAtFront.indexOf('='),
-        lineEndingIndex = cutOffAtFront.indexOf(';');
-    
-    if(assignmentIndex > -1) {
-        return cutOffAtFront.substring(0, assignmentIndex).trim();
-    } else if(lineEndingIndex > -1) {
-        return cutOffAtFront.substring(0, lineEndingIndex).trim();
+    if(hasValidAutowireableField(applicableLine)) {
+        let variableName = applicableLine.getVariableOrFunctionName();
+        annotationController.insertBelowLineOfApplication(variableName + ' = _SpringButJs.inject(\'' + variableName + '\');');
     } else {
-        return cutOffAtFront.trim();
+        annotationController.throwError('Line "' + applicableLine.toString() + '" is not autowireable!');
     }
 }
 
-function parserFunction(sourceLine) {
-    if(hasValidAutowireableField(sourceLine)) {
-        let variableName = getVariableName(sourceLine);
-
-        return {
-            insertLinesBelow: variableName + ' = _SpringButJs.inject(\'' + variableName + '\');'
-        };
-    } else {
-        throw 'Line "' + sourceLine.trim() + '" is not autowireable!';
-    }
-}
-
-function creationFunction(SpringButJs) {
+function create(SpringButJs) {
     let aliases = ['Autowired', 'Inject'];
 
     aliases.forEach(alias => {
         SpringButJs.createAnnotation(
             alias, 
-            parserFunction, 
+            parse, 
             'Automatically sets variable values based on available beans.'
         );
     });
 }
 
-module.exports = creationFunction;
+module.exports = create;
 module.exports.lineHasValidAutowireableField = hasValidAutowireableField;
-module.exports.getVariableNameFromLine = getVariableName;

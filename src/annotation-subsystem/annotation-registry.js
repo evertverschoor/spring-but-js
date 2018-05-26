@@ -1,13 +1,14 @@
-function AnnotationRegistry(logger, annotationHelper) {
+const AnnotationController = require('./annotation-controller');
+
+function AnnotationRegistry(_logger) {
 
     const 
         registry = {},
-        docs = {};
+        docs = {},
+        logger = _logger;
 
     this.createAnnotation = createAnnotation;
-    this.lineIsExistingAnnotation = lineIsExistingAnnotation;
-    this.getParseFunction = getParseFunction;
-    this.getActualAnnotationNameFromLine = getActualAnnotationNameFromLine;
+    this.getAnnotationActions = getAnnotationActions;
     this.printAvailableAnnotations = printAvailableAnnotations;
 
     function isValidAnnotationName(name) {
@@ -32,36 +33,27 @@ function AnnotationRegistry(logger, annotationHelper) {
             docs[name] = documentation;
         }
     }
-    
-    function lineIsExistingAnnotation(line) {
-        if(!annotationHelper.lineIsAnnotation(line)) {
-            return false;
-        } else {
-            let annotationName = getActualAnnotationNameFromLine(line);
-            return getParseFunction(annotationName) != null;
-        }
-    }
 
-    function getParseFunction(annotationName) {
-        let attempt = registry[annotationName];
+    function getAnnotationActions(annotationName, parseable, annotationIndex) {
+        let parseFunction = registry[annotationName],
+            controller = new AnnotationController(logger, parseable, annotationIndex);
 
-        if(attempt == null) {
-            attempt = registry[annotationName.replace('@', '')];
+        if(parseFunction == null) {
+            parseFunction = registry[annotationName.replace('@', '')];
 
-            if(attempt == null) {
-                return null;
+            if(parseFunction == null) {
+                logger.error('No annotation called "' + annotationName + '" exists!');
+                return;
             } else {
-                return attempt;
+                parseFunction(controller);
             }
         } else {
-            return attempt;
+            parseFunction(controller);
         }
+
+        return controller.getActions();
     }
 
-    function getActualAnnotationNameFromLine(line) {
-        line = line.trim().replace('@', '');
-        return line.substring(1, line.length - 1);
-    }
 
     function printAvailableAnnotations() {
         let annotationNames = Object.keys(registry),

@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/spring-but-js.js",
   "scripts": {
-    "test": "jasmine-node test"
+    "test": "jasmine-node src"
   },
   "author": "Evert Verschoor",
   "license": "ISC",

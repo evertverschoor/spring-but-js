@@ -1,4 +1,4 @@
-const autowired = require('../../src/annotations/autowired');
+const autowired = require('./autowired');
 
 describe('lineHasValidAutowireableField()', () => {
 
@@ -17,20 +17,5 @@ describe('lineHasValidAutowireableField()', () => {
     it('should reject improper variable lines', () => {
         expect(autowired.lineHasValidAutowireableField('const foo;')).toBe(false);
         expect(autowired.lineHasValidAutowireableField('const foo = "bar";')).toBe(false);
-    });
-});
-
-describe('getVariableNameFromLine()', () => {
-
-    it('should return proper variable names from a variety of lines', () => {
-        expect(autowired.getVariableNameFromLine('let foo = "bar";')).toEqual('foo');
-        expect(autowired.getVariableNameFromLine('let foo;')).toEqual('foo');
-        expect(autowired.getVariableNameFromLine('var foo;')).toEqual('foo');
-        expect(autowired.getVariableNameFromLine('var foo')).toEqual('foo');
-
-        expect(autowired.getVariableNameFromLine('this.foo = "bar";')).toEqual('foo');
-        expect(autowired.getVariableNameFromLine('this.foo;')).toEqual('foo');
-
-        expect(autowired.getVariableNameFromLine('this.foo; someOtherStatement()')).toEqual('foo');
     });
 });
