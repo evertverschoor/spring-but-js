@@ -1,6 +1,7 @@
 function Parser(annotationRegistry) {
 
     this.parse = parse;
+    this.isValidParseable = isValidParseable;
 
     function isValidParseable(parseable) {
         return  typeof parseable === 'function' &&
@@ -60,7 +61,9 @@ function Parser(annotationRegistry) {
                 let annotationName = annotationRegistry.getActualAnnotationNameFromLine(line),
                     parseFunction = annotationRegistry.getParseFunction(annotationName);
                 
-                let parseResult = parseFunction(line);
+                let nextLine = originalLines[i + 1] != null ? originalLines[i + 1] : '',
+                    parseResult = parseFunction(nextLine);
+
                 if(isValidParseResult(parseResult)) {
                     // Check which parse result we get, multiple ones can be requested at once
                     if(parseResult.insertLineBelow) {
@@ -85,6 +88,8 @@ function Parser(annotationRegistry) {
                 newLines.push(line); // No annotation means add this current line as is
             }
         }
+
+        // console.log(newLines.join('\n'));
 
         let finalExpressionString = newLines.join('\n'),
             finalFunction = new Function(finalExpressionString)();

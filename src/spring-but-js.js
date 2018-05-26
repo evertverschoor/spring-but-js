@@ -1,14 +1,28 @@
 const 
     AnnotationRegistry = require('./annotation-registry'),
-    Parser = require('./parser');
+    Parser = require('./parser'),
+    BeanPool = require('./bean-pool');
 
 const
     annotationRegistry = new AnnotationRegistry(),
-    parser = new Parser(annotationRegistry);
+    parser = new Parser(annotationRegistry),
+    beanPool = new BeanPool();
 
 function run(parseable) {
     parser.parse(parseable);
 }
 
-module.exports = run;
-module.exports.createAnnotation = annotationRegistry.createAnnotation;
+function loadAnnotations() {
+    require('./annotations/autowired')(springButJs);
+    require('./annotations/component')(springButJs);
+}
+
+const springButJs = run;
+springButJs.createAnnotation = annotationRegistry.createAnnotation;
+springButJs.createBean = beanPool.addBean;
+springButJs.createProvider = beanPool.addProvider;
+springButJs.inject = beanPool.getBean;
+
+loadAnnotations();
+
+module.exports = springButJs

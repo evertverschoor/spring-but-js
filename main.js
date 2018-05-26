@@ -1,20 +1,50 @@
-require('./built-in-annotations.js');
-
-const 
-    SpringButJs = require('./src/spring-but-js');
+const SpringButJs = require('./src/spring-but-js');
 
 SpringButJs(() => {
 
     '@Component'
-    function MyClass() { 
-        
+    function SomeComponent() { 
+
         '@Autowired'
-        let myVar;
+        let speakerService;
         
-        this.myFunction = function() {
-            console.log('Hello ' + myVar);
+        '@PostConstruct'
+        this.onConstructed = function() {
+            speakerService.speak();
         }
     }
 
-    return MyClass;
+    return SomeComponent;
 });
+
+SpringButJs(() => {
+
+    '@Service'
+    function SpeakerService() { 
+        
+        this.speak = function() {
+             console.log('Hello from SpeakerService!');
+        }
+    }
+
+    return SpeakerService;
+});
+
+SpringButJs.inject('SomeComponent').onConstructed();
+
+// SpringButJs(() => {
+
+//     '@Component'
+//     class MyEs6Class {
+
+//         constructor() {
+
+//         }
+
+//         myEs6Function() {
+
+//         }
+//     }
+
+//     return MyEs6Class;
+// });
