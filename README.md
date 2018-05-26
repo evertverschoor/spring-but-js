@@ -3,38 +3,41 @@
 # Spring but JS
 Use Spring features in NodeJS!
 
-### The idea
+# A demonstration
+### Main.js
 ``` javascript
-const SpringButJs = require('spring-but-js');
+const SpringButJs = require('../spring-but-js/src/spring-but-js.js');
 
-SpringButJs(() => {
-
-    '@Component'
-    function SomeComponent() { 
-
-        '@Autowired'
-        let speakerService;
-        
-        this.someFunction = function() {
-            speakerService.speak();
-        }
-    }
-
-    return SomeComponent;
+SpringButJs.enableComponentScan('components').then(() => {
+    SpringButJs.inject('MyOtherComponent').myOtherFunction(); // Hello from MyService!
 });
+```
 
-SpringButJs(() => {
+### components/my-service.js
+``` javascript
+'@Service'
+function MyService() {
 
-    '@Service'
-    function SpeakerService() { 
-        
-        this.speak = function() {
-             console.log('Hello from SpeakerService!');
-        }
+    this.myFunction = function() {
+        console.log('Hello from MyService!');
     }
+}
 
-    return SpeakerService;
-});
+return MyService;
+```
 
-SpringButJs.inject('SomeComponent').someFunction(); // Hello from SpeakerService!
+### components/my-other-component.js
+``` javascript
+'@Component'
+function MyOtherComponent() {
+
+    '@Autowired'
+    let myService;
+
+    this.myOtherFunction = function() {
+        myService.myFunction();
+    }
+}
+
+return MyOtherComponent;
 ```

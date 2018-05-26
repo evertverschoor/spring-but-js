@@ -1,12 +1,6 @@
 function Parser(annotationRegistry) {
 
     this.parse = parse;
-    this.isValidParseable = isValidParseable;
-
-    function isValidParseable(parseable) {
-        return  typeof parseable === 'function' &&
-                typeof parseable() === 'function';
-    }
 
     function isValidParseResult(parseResult) {
         if(parseResult == null) {
@@ -20,16 +14,13 @@ function Parser(annotationRegistry) {
     }
     
     /**
-     * Parse a parseable function or lambda expression that contains @Annotations.
+     * Parse a parseable function or lambda expression or a string that represents one.
      * Return a function that represents the parsed new expression, subject to syntax errors of course.
      */
     function parse(parseable) {
-        if(!isValidParseable(parseable)) {
-            throw 'An invalid parseable function or lambda expression was provided! A parseable expression must also return a function!';
-        }
-    
+
         // Make an array of the original's lines, splitting the string by newline.
-        let originalLines = parseable.toString().split('\n'),
+        let originalLines = parseable.split('\n'),
             newLines = [],
             consumers = [], // Annotations that want the final parseable
             insertion = {
@@ -84,15 +75,19 @@ function Parser(annotationRegistry) {
 
                     throw toThrow;
                 }
-            } else if(i != 0 && i != originalLines.length - 1) {
+            } else {
                 newLines.push(line); // No annotation means add this current line as is
             }
         }
 
-        // console.log(newLines.join('\n'));
-
         let finalExpressionString = newLines.join('\n'),
             finalFunction = new Function(finalExpressionString)();
+
+        if(finalFunction == null) {
+            throw   'The following expression does not return anything!\n' + 
+                    '(When defining a component, this component should be returned at the bottom of the file)\n\n' + 
+                    parseable;
+        }
 
         consumers.forEach(c => { c(finalFunction) });
 

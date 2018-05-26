@@ -1,11 +1,14 @@
-function AnnotationRegistry() {
+function AnnotationRegistry(logger) {
 
-    const registry = {};
+    const 
+        registry = {},
+        docs = {};
 
     this.createAnnotation = createAnnotation;
     this.lineIsAnnotation = lineIsAnnotation;
     this.getParseFunction = getParseFunction;
     this.getActualAnnotationNameFromLine = getActualAnnotationNameFromLine;
+    this.printAvailableAnnotations = printAvailableAnnotations;
 
     function isValidAnnotationName(name) {
         return typeof name === 'string' && name.length > 0;
@@ -15,7 +18,7 @@ function AnnotationRegistry() {
         return typeof parseFunction === 'function';
     }
     
-    function createAnnotation(name, parseFunction) {
+    function createAnnotation(name, parseFunction, documentation) {
         if(!isValidAnnotationName(name)) {
             throw 'Please pass a valid annotation name!';
         }
@@ -24,6 +27,10 @@ function AnnotationRegistry() {
         }
     
         registry[name] = parseFunction;
+
+        if(documentation != null) {
+            docs[name] = documentation;
+        }
     }
     
     function lineIsAnnotation(line) {
@@ -62,6 +69,18 @@ function AnnotationRegistry() {
     function getActualAnnotationNameFromLine(line) {
         line = line.trim().replace('@', '');
         return line.substring(1, line.length - 1);
+    }
+
+    function printAvailableAnnotations() {
+        let annotationNames = Object.keys(registry),
+            stringToPrint = '';
+
+        annotationNames.forEach(annotationName => {
+            let documentation = docs[annotationName] != null ? docs[annotationName] : 'No documentation available.';
+            stringToPrint += '@' + annotationName + '\n' + documentation + '\n\n';
+        });
+
+        logger.info('The following annotations are available for use:\n\n' + stringToPrint);
     }
 }
 

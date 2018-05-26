@@ -38,8 +38,15 @@ function parserFunction(sourceLine) {
 }
 
 function creationFunction(SpringButJs) {
-    SpringButJs.createAnnotation('Autowired', parserFunction);
-    SpringButJs.createAnnotation('Inject', parserFunction);
+    let aliases = ['Autowired', 'Inject'];
+
+    aliases.forEach(alias => {
+        SpringButJs.createAnnotation(
+            alias, 
+            parserFunction, 
+            'Automatically sets variable values based on available beans.'
+        );
+    });
 }
 
 module.exports = creationFunction;

@@ -1,6 +1,7 @@
-function parserFunction(SpringButJs, sourceLine) {
+function parserFunction(SpringButJs, sourceLine, logger) {
     let consumer = Component => {
         SpringButJs.createProvider(Component.name, () => new Component(SpringButJs));
+        logger.log('Created bean with name: ' + Component.name.toLowerCase());
     };
 
     return {
@@ -9,15 +10,20 @@ function parserFunction(SpringButJs, sourceLine) {
     }
 }
 
-function creationFunction(SpringButJs) {
+function creationFunction(SpringButJs, logger) {
     let proxyParserFunction = sourceLine => {
-        return parserFunction(SpringButJs, sourceLine);
+        return parserFunction(SpringButJs, sourceLine, logger);
     };
 
-    SpringButJs.createAnnotation('Component', proxyParserFunction);
-    SpringButJs.createAnnotation('Service', proxyParserFunction);
-    SpringButJs.createAnnotation('Configuration', proxyParserFunction);
-    SpringButJs.createAnnotation('Repository', proxyParserFunction);
+    let aliases = ['Component', 'Service', 'Configuration', 'Repository'];
+
+    aliases.forEach(alias => {
+        SpringButJs.createAnnotation(
+            alias, 
+            proxyParserFunction, 
+            'Registers the annotated function expression as a singleton bean.'
+        );
+    });
 }
 
 module.exports = creationFunction;

@@ -1,4 +1,4 @@
-function BeanPool() {
+function BeanPool(logger) {
 
     const 
         pool = {},
@@ -19,10 +19,10 @@ function BeanPool() {
             if(pool[name] == null) {
                 pool[name] = value;
             } else {
-                throw 'A bean called "' + name + '" already exists!';
+                logger.error('A bean called "' + name + '" already exists!');
             }
         } else {
-            throw '"' + name + '" is an invalid bean name!';
+            logger.error('"' + name + '" is an invalid bean name!');
         }
     }
 
@@ -33,10 +33,10 @@ function BeanPool() {
             if(pool[name] == null && providers[name] == null) {
                 providers[name] = providerFunction;
             } else {
-                throw 'A bean called "' + name + '" already exists!';
+                logger.error('A bean called "' + name + '" already exists!');
             }
         } else {
-            throw '"' + name + '" is an invalid bean name!';
+            logger.error('"' + name + '" is an invalid bean name!');
         }
     }
 
@@ -49,7 +49,7 @@ function BeanPool() {
             pool[name] = providers[name]();
             return pool[name];
         } else {
-            throw 'No bean called "' + name + '" exists!';
+            logger.error('No bean called "' + name + '" exists!');
         }
     }
 }

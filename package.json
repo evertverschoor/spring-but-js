@@ -2,9 +2,8 @@
   "name": "spring-but-js",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
+  "main": "src/spring-but-js.js",
   "scripts": {
-    "start": "node main.js",
     "test": "jasmine-node test"
   },
   "author": "Evert Verschoor",
