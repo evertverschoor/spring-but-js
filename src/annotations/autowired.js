@@ -30,7 +30,7 @@ function parserFunction(sourceLine) {
         let variableName = getVariableName(sourceLine);
 
         return {
-            insertLineBelow: variableName + ' = _SpringButJs.inject(\'' + variableName + '\');'
+            insertLinesBelow: variableName + ' = _SpringButJs.inject(\'' + variableName + '\');'
         };
     } else {
         throw 'Line "' + sourceLine.trim() + '" is not autowireable!';

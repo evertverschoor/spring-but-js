@@ -5,12 +5,16 @@ const Parser = require('../src/parser');
  */
 function getTestParserWithResultConsumer(consumer) {
     const annotationRegistryMock = {
-        lineIsAnnotation: line => line == '\'@Test\'',
+        lineIsExistingAnnotation: line => line == '\'@Test\'',
         getActualAnnotationNameFromLine: line => 'Test',
         getParseFunction: name => () => { return { provideEntireResult: consumer } }
     };
 
-    return new Parser(annotationRegistryMock);
+    const annotationHelperMock = {
+        lineIsAnnotation: line => line == '\'@Test\''
+    };
+
+    return new Parser(annotationRegistryMock, annotationHelperMock);
 }
 
 describe('parse()', () => {
@@ -60,3 +64,7 @@ describe('parse()', () => {
     });
 });
 
+describe('getNonAnnotationNextLine()', () => {
+
+    it('should return the proper non-annotated next line')
+});

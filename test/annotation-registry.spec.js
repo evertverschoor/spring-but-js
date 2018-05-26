@@ -5,34 +5,25 @@ let annotationRegistry;
 describe('lineIsAnnotation()', () => {
 
     beforeEach(() => {
-        annotationRegistry = new AnnotationRegistry();
+        annotationRegistry = new AnnotationRegistry(null, {
+            lineIsAnnotation: () => true
+        });
     });
 
-    it('should approve well formatted registered annotations', () => {
+    it('should approve registered annotations', () => {
         annotationRegistry.createAnnotation('Autowired', () => {});
         annotationRegistry.createAnnotation('Aa', () => {});
         annotationRegistry.createAnnotation('AVeryLongAnnotationName', () => {});
 
-        expect(annotationRegistry.lineIsAnnotation('\'@Autowired\'')).toBe(true);
-        expect(annotationRegistry.lineIsAnnotation('\'@Aa\'')).toBe(true);
-        expect(annotationRegistry.lineIsAnnotation('\'@AVeryLongAnnotationName\'')).toBe(true);
+        expect(annotationRegistry.lineIsExistingAnnotation('\'@Autowired\'')).toBe(true);
+        expect(annotationRegistry.lineIsExistingAnnotation('\'@Aa\'')).toBe(true);
+        expect(annotationRegistry.lineIsExistingAnnotation('\'@AVeryLongAnnotationName\'')).toBe(true);
     });
 
     it('should reject unregistered annotations', () => {
-        expect(annotationRegistry.lineIsAnnotation('\'@Autowired\'')).toBe(false);
-        expect(annotationRegistry.lineIsAnnotation('\'@Aa\'')).toBe(false);
-        expect(annotationRegistry.lineIsAnnotation('\'@AVeryLongAnnotationName\'')).toBe(false);
-    });
-
-    it('should reject badly formatted but registered annotations', () => {
-        annotationRegistry.createAnnotation('Autowired', () => {});
-
-        expect(annotationRegistry.lineIsAnnotation('@Autowired\'')).toBe(false);
-        expect(annotationRegistry.lineIsAnnotation('\'@Autowired')).toBe(false);
-        expect(annotationRegistry.lineIsAnnotation('@Autowired')).toBe(false);
-
-        expect(annotationRegistry.lineIsAnnotation('\'Autowired\'')).toBe(false);
-        expect(annotationRegistry.lineIsAnnotation('\'Aut@owired\'')).toBe(false);
+        expect(annotationRegistry.lineIsExistingAnnotation('\'@Autowired\'')).toBe(false);
+        expect(annotationRegistry.lineIsExistingAnnotation('\'@Aa\'')).toBe(false);
+        expect(annotationRegistry.lineIsExistingAnnotation('\'@AVeryLongAnnotationName\'')).toBe(false);
     });
 });
 

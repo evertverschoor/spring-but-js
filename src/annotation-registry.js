@@ -1,11 +1,11 @@
-function AnnotationRegistry(logger) {
+function AnnotationRegistry(logger, annotationHelper) {
 
     const 
         registry = {},
         docs = {};
 
     this.createAnnotation = createAnnotation;
-    this.lineIsAnnotation = lineIsAnnotation;
+    this.lineIsExistingAnnotation = lineIsExistingAnnotation;
     this.getParseFunction = getParseFunction;
     this.getActualAnnotationNameFromLine = getActualAnnotationNameFromLine;
     this.printAvailableAnnotations = printAvailableAnnotations;
@@ -33,20 +33,12 @@ function AnnotationRegistry(logger) {
         }
     }
     
-    function lineIsAnnotation(line) {
-        if(typeof line !== 'string' || line.length < 3) {
+    function lineIsExistingAnnotation(line) {
+        if(!annotationHelper.lineIsAnnotation(line)) {
             return false;
         } else {
-            line = line.trim();
-    
-            const QUOTES = ['\'', '"'];
-    
-            let firstCharIsQuote = QUOTES.indexOf(line.substring(0, 1)) > -1,
-                lastCharIsQuote = QUOTES.indexOf(line.substring(line.length - 1, line.length)) > -1,
-                annotationName = getActualAnnotationNameFromLine(line),
-                hasAtSignAtSecondChar = line.substring(1, 2) == '@'
-    
-            return firstCharIsQuote && lastCharIsQuote && hasAtSignAtSecondChar && getParseFunction(annotationName) != null;
+            let annotationName = getActualAnnotationNameFromLine(line);
+            return getParseFunction(annotationName) != null;
         }
     }
 

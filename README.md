@@ -1,10 +1,12 @@
 [![Build Status](https://travis-ci.org/evertverschoor/spring-but-js.svg?branch=master)](https://travis-ci.org/evertverschoor/spring-but-js)
 
 # Spring but JS
-Use Spring features in NodeJS!
+Use annotations and Spring Inversion of Control in NodeJS! Easily set up a REST endpoint like you would in a Spring Boot application.
 
 # A demonstration
-### Main.js
+Below is a small project that makes use of SpringButJs, showcasing simple IoC mechanics.
+
+### main.js
 ``` javascript
 const SpringButJs = require('../spring-but-js/src/spring-but-js.js');
 
