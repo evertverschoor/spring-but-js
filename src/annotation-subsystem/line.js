@@ -2,16 +2,27 @@ function Line(_lineAsString) {
 
     const lineAsString = _lineAsString.trim();
 
+    this.isComment = isComment;
     this.isFunction = isFunction;
+    this.isAnonymousFunction = isAnonymousFunction;
     this.isMemberVariable = isMemberVariable;
     this.isVariable = isVariable;
     this.isAnnotation = isAnnotation;
     this.getAnnotationName = getAnnotationName;
+    this.getAnnotationArguments = getAnnotationArguments;
     this.getVariableOrFunctionName = getVariableOrFunctionName;
     this.toString = toString;
 
+    function isComment() {
+        return lineAsString.indexOf('//') == 0;
+    }
+
     function isFunction() {
         return lineAsString.indexOf('function ') == 0;
+    }
+
+    function isAnonymousFunction() {
+        return lineAsString.indexOf('function()') > -1;
     }
 
     function isMemberVariable() {
@@ -40,11 +51,35 @@ function Line(_lineAsString) {
     }
 
     function getAnnotationName() {
+        const 
+            openBracketIndex = lineAsString.indexOf('('),
+            closeBracketIndex = lineAsString.indexOf(')');
+
         if(isAnnotation()) {
             let returnValue = lineAsString.replace('@', '');
-            return returnValue.substring(1, returnValue.length - 1);
+
+            if(openBracketIndex > -1 && closeBracketIndex > openBracketIndex) {
+                return returnValue.substring(1, openBracketIndex - 1);
+            } else {
+                return returnValue.substring(1, returnValue.length - 1);
+            }
         } else {
             return null;
+        }
+    }
+
+    function getAnnotationArguments() {
+        const 
+            openBracketIndex = lineAsString.indexOf('('),
+            closeBracketIndex = lineAsString.indexOf(')');
+
+        if(isAnnotation() && openBracketIndex > -1 && closeBracketIndex > openBracketIndex) {
+            let argumentsString = lineAsString.substring(openBracketIndex + 1,  closeBracketIndex),
+                argumentsList = argumentsString.split(',');
+
+            return argumentsList.map(a => a.trim().replace(/"/g, '').replace(/'/g, ''));
+        } else {
+            return [];
         }
     }
 

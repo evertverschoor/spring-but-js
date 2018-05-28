@@ -34,9 +34,9 @@ function AnnotationRegistry(_logger) {
         }
     }
 
-    function getAnnotationActions(annotationName, parseable, annotationIndex) {
+    function getAnnotationActions(annotationName, parseable, annotationIndex, annotationArguments) {
         let parseFunction = registry[annotationName],
-            controller = new AnnotationController(logger, parseable, annotationIndex);
+            controller = new AnnotationController(logger, parseable, annotationIndex, annotationArguments);
 
         if(parseFunction == null) {
             parseFunction = registry[annotationName.replace('@', '')];

@@ -19,7 +19,7 @@ function Parseable(_functionAsString) {
         let nextLine = lines[currentIndex++];
 
         if(nextLine != null) {
-            while(nextLine != null && nextLine.isAnnotation()) {
+            while(nextLine != null && (nextLine.isAnnotation() || nextLine.isComment())) {
                 nextLine = lines[currentIndex++];
             }
 

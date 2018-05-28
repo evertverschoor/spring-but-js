@@ -1,26 +1,18 @@
-function parserFunction(SpringButJs, sourceLine, webServer, logger) {
-    if(sourceLine.indexOf('function ') == 0) {
-        let consumer = Component => {
-            if(!webServer.isServerRunning()) {
-                webServer.startServer();
-                logger.log('Started the express server!');
-            }
-        };
-    
-        return {
-            addAnnotations: '\'@Component\'',
-            provideEntireResult: consumer
-        }
+function parserFunction(SpringButJs, annotationController, webServer, logger) {
+    const applicableLine = annotationController.getLineOfApplication();
+
+    if(applicableLine.isFunction()) {
+        annotationController.requestReturnedObject(Component => {
+            webServer.markAsController(Component.name);
+        });
     } else {
-        return {
-            throw: 'The @Controller and @RestController annotations can only be placed over functions!'
-        };
+        annotationController.throwError('@Controller and @RestController may only be applied to function statements!');
     }
 }
 
 function creationFunction(SpringButJs, webServer, logger) {
-    let proxyParserFunction = sourceLine => {
-        return parserFunction(SpringButJs, sourceLine, webServer, logger);
+    let proxyParserFunction = annotationController => {
+        return parserFunction(SpringButJs, annotationController, webServer, logger);
     };
 
     let aliases = ['Controller', 'RestController'];

@@ -1,9 +1,10 @@
-function AnnotationController(_logger, _parseable, _annotationIndex) {
+function AnnotationController(_logger, _parseable, _annotationIndex, _arguments) {
 
     const 
         logger = _logger,
         parseable = _parseable,
-        annotationIndex = _annotationIndex;
+        annotationIndex = _annotationIndex,
+        annotationArguments = _arguments;
 
     let actions = {
         returnedObjectRequestCallback: null,
@@ -12,6 +13,7 @@ function AnnotationController(_logger, _parseable, _annotationIndex) {
         insertAtEnd: null
     }
 
+    this.getArguments = getArguments;
     this.getLineOfApplication = getLineOfApplication;
     this.insertBelowLineOfApplication = insertBelowLineOfApplication;
     this.insertAtEnd = insertAtEnd;
@@ -19,6 +21,10 @@ function AnnotationController(_logger, _parseable, _annotationIndex) {
     this.replaceAnnotationWithLine = replaceAnnotationWithLine;
     this.throwError = throwError;
     this.getActions = getActions;
+
+    function getArguments() {
+        return annotationArguments;
+    }
 
     function getLineOfApplication() {
         return parseable.getNextNonAnnotationLine(annotationIndex);

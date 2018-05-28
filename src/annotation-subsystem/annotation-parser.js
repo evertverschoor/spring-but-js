@@ -25,7 +25,8 @@ function Parser(_annotationRegistry, _logger) {
                 const actions = annotationRegistry.getAnnotationActions(
                     l.getAnnotationName(), 
                     parseable,
-                    i
+                    i,
+                    l.getAnnotationArguments()
                 );
 
                 if(actions.returnedObjectRequestCallback) {
@@ -71,7 +72,12 @@ function Parser(_annotationRegistry, _logger) {
         }
 
         const result = getResult();
-        if(typeof result !== 'function') {
+        if(result == null) {
+            logger.error(
+                'The following file does not contain any sort of @Component!\n\n' + 
+                functionAsString
+            );
+        } else if(typeof result !== 'function') {
             logger.error(
                 'When defining a component in a file, it should not return anything!\n\n' + 
                 functionAsString
