@@ -1,8 +1,10 @@
 const Parseable = require('./parseable');
 
-function Parser(_annotationRegistry) {
+function Parser(_annotationRegistry, _logger) {
 
-    const annotationRegistry = _annotationRegistry;
+    const 
+        annotationRegistry = _annotationRegistry,
+        logger = _logger;
 
     this.parse = parse;
     
@@ -15,7 +17,8 @@ function Parser(_annotationRegistry) {
             newLines = [],
             resultConsumers = [];
 
-        let delayedInsertions = [];
+        let delayedInsertions = [],
+            finalInsertions = [];
 
         parseable.forEachLine((l, i) => {
             if(l.isAnnotation()) {
@@ -34,6 +37,9 @@ function Parser(_annotationRegistry) {
                 if(actions.insertBelowLineOfApplication) {
                     delayedInsertions.push(actions.insertBelowLineOfApplication);
                 }
+                if(actions.insertAtEnd) {
+                    finalInsertions.push(actions.insertAtEnd);
+                }
             } else {
                 newLines.push(l.toString());
 
@@ -46,6 +52,12 @@ function Parser(_annotationRegistry) {
             }
         });
 
+        if(finalInsertions.length > 0) {
+            finalInsertions.forEach(i => {
+                newLines.push(i);
+            });
+        }
+
         const joinedString = newLines.join('\n');
         let getResult = null;
 
@@ -54,15 +66,14 @@ function Parser(_annotationRegistry) {
         } catch(err) {
             logger.error(
                 'The following generated code threw the following syntax error: ' + 
-                err + '\n\n' + finalExpressionString
+                err + '\n\n' + joinedString
             );
         }
 
         const result = getResult();
-        if(result == null) {
+        if(typeof result !== 'function') {
             logger.error(
-                'The following expression does not return anything!\n' + 
-                '(When defining a component, this component should be returned at the bottom of the file)\n\n' + 
+                'When defining a component in a file, it should not return anything!\n\n' + 
                 functionAsString
             );
         }

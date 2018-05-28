@@ -12,10 +12,12 @@ function Logger() {
 
     function info(message) {
         console.log('\x1b[34m', 'INFO ' + PREFIX + message);
+        console.log('\x1b[0m', '');
     }
 
     function logError(message) {
         console.error('\x1b[31m', 'ERROR ' + PREFIX + message);
+        console.log('\x1b[0m', '');
     }
 }
 

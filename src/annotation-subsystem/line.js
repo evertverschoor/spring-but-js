@@ -51,12 +51,15 @@ function Line(_lineAsString) {
     function getVariableOrFunctionName() {
         let cutOffAtFront = lineAsString.replace('let ', '').replace('var ', '').replace('this.', '').replace('function ', ''),
             assignmentIndex = cutOffAtFront.indexOf('='),
-            lineEndingIndex = cutOffAtFront.indexOf(';');
+            lineEndingIndex = cutOffAtFront.indexOf(';'),
+            functionEndingIndex = cutOffAtFront.indexOf('()');
         
         if(assignmentIndex > -1) {
             return cutOffAtFront.substring(0, assignmentIndex).trim();
         } else if(lineEndingIndex > -1) {
             return cutOffAtFront.substring(0, lineEndingIndex).trim();
+        } else if(functionEndingIndex > -1) {
+            return cutOffAtFront.substring(0, functionEndingIndex).trim();
         } else {
             return cutOffAtFront.trim();
         }

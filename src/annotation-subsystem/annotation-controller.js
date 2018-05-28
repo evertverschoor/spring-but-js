@@ -8,11 +8,13 @@ function AnnotationController(_logger, _parseable, _annotationIndex) {
     let actions = {
         returnedObjectRequestCallback: null,
         replaceAnnotationWithLine: null,
-        insertBelowLineOfApplication: null
+        insertBelowLineOfApplication: null,
+        insertAtEnd: null
     }
 
     this.getLineOfApplication = getLineOfApplication;
     this.insertBelowLineOfApplication = insertBelowLineOfApplication;
+    this.insertAtEnd = insertAtEnd;
     this.requestReturnedObject = requestReturnedObject;
     this.replaceAnnotationWithLine = replaceAnnotationWithLine;
     this.throwError = throwError;
@@ -25,6 +27,14 @@ function AnnotationController(_logger, _parseable, _annotationIndex) {
     function insertBelowLineOfApplication(line) {
         if(typeof line === 'string') {
             actions.insertBelowLineOfApplication = line;
+        } else {
+            logger.error('AnnotationController.insertBelowLineOfApplication() must take a string parameter!');
+        }
+    }
+
+    function insertAtEnd(line) {
+        if(typeof line === 'string') {
+            actions.insertAtEnd = line;
         } else {
             logger.error('AnnotationController.insertBelowLineOfApplication() must take a string parameter!');
         }

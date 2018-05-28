@@ -10,7 +10,7 @@ const
     springButJs = {},
     logger = new Logger(),
     annotationRegistry = new AnnotationRegistry(logger),
-    parser = new AnnotationParser(annotationRegistry),
+    parser = new AnnotationParser(annotationRegistry, logger),
     beanPool = new BeanPool(logger),
     componentScanner = new ComponentScanner(parser, logger),
     webServer = new WebServer(logger);

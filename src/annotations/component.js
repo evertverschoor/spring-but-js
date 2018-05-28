@@ -3,6 +3,7 @@ function parse(SpringButJs, annotationController, logger) {
 
     if(applicableLine.isFunction()) {
         annotationController.insertBelowLineOfApplication('const _SpringButJs = arguments[arguments.length - 1];');
+        annotationController.insertAtEnd('return ' + applicableLine.getVariableOrFunctionName() + ';');
         annotationController.requestReturnedObject(Component => {
             SpringButJs.createProvider(Component.name, () => new Component(SpringButJs));
             logger.log('Created bean with name: ' + Component.name.toLowerCase());
