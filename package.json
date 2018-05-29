@@ -1,19 +1,28 @@
 {
   "name": "spring-but-js",
   "version": "1.0.0",
-  "description": "",
+  "description": "Use features of the Spring Framework in NodeJS!",
   "main": "src/spring-but-js.js",
   "scripts": {
     "test": "jasmine-node src"
   },
+  "keywords": [
+    "dependency injection",
+    "annotations",
+    "spring",
+    "rest"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/evertverschoor/spring-but-js.git"
+  },
   "author": "Evert Verschoor",
-  "license": "ISC",
+  "license": "WTFPL",
   "devDependencies": {
     "jasmine-node": "^1.14.5"
   },
   "dependencies": {
     "express": "^4.16.3",
-    "opn": "^5.3.0",
-    "tmp": "0.0.33"
+    "opn": "^5.3.0"
   }
 }

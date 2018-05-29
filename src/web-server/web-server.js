@@ -1,3 +1,10 @@
+// ------------------------------------------------------------------------ //
+//  Copyright © 2018 Evert Verschoor                                        //
+//  This work is free. You can redistribute it and/or modify it under the   //
+//  terms of the Do What The Fuck You Want To Public License, Version 2,    //
+//  as published by Sam Hocevar. See the COPYING file for more details.     //
+// ------------------------------------------------------------------------ //
+
 const ControllerMapping = require('./controller-mapping');
 
 function WebServer(_logger, _SpringButJs) {
@@ -28,11 +35,10 @@ function WebServer(_logger, _SpringButJs) {
     this.setPort = setPort;
     this.startServer = startServer;
     this.isServerRunning = isServerRunning;
-    this.addEndpoint = addEndpoint;
     this.markAsController = markAsController;
     this.registerControllerMapping = registerControllerMapping;
     this.registerMethodMapping = registerMethodMapping;
-    this.addEndpoint = addEndpoint;
+    this.launchEndpoints = launchEndpoints;
 
     function getPort() {
         return actualPort;
@@ -131,20 +137,18 @@ function WebServer(_logger, _SpringButJs) {
         }
 
         if(registeredControllerMappings[controllerName] != null) {
-            const methodMapping = registeredControllerMappings[controllerName].addMethodMapping(methodName, mapping, requestMethod);
-            addEndpoint(registeredControllerMappings[controllerName], methodMapping);
+            registeredControllerMappings[controllerName].addMethodMapping(methodName, mapping, requestMethod);
         } else {
             throw 'The controller called "' + controllerName + '" has not been registered yet!';
         }
     }
 
-    function addEndpoint(controllerMapping, methodMapping) {
+    function launchEndpoint(controllerMapping, methodMapping) {
         if(!isServerRunning()) {
             startServer();
         }
 
-        SpringButJs.waitForBean(controllerMapping.controllerName, bean => {
-            let requestMethodString;
+        let requestMethodString;
 
             switch(methodMapping.requestMethod) {
                 default:
@@ -179,6 +183,19 @@ function WebServer(_logger, _SpringButJs) {
                 'Created new REST endpoint:  ' + requestMethodString.toUpperCase() + 
                 ' ' + URL
             );
+    }
+
+    function launchEndpoints() {
+        Object.keys(registeredControllerMappings).forEach(controllerName => {
+            const 
+                controllerMapping = registeredControllerMappings[controllerName],
+                methodMappings = controllerMapping.getMethodMappings();
+
+            Object.keys(methodMappings).forEach(methodName => {
+                const methodMapping = methodMappings[methodName];
+
+                launchEndpoint(controllerMapping, methodMapping);
+            });
         });
     }
 
