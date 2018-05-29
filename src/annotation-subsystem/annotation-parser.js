@@ -1,4 +1,6 @@
-const Parseable = require('./parseable');
+const 
+    Parseable = require('./parseable'),
+    Line = require('./line');
 
 function Parser(_annotationRegistry, _logger) {
 
@@ -7,6 +9,39 @@ function Parser(_annotationRegistry, _logger) {
         logger = _logger;
 
     this.parse = parse;
+
+    /**
+     * Perform annocation actions based on what the annotation controller returns.
+     * Can recursively call itself because annotations can sort of extend others.
+     */
+    function performAnnotationActions(line, parseable, index, resultConsumers, newLines, delayedInsertions, finalInsertions) {
+        const actions = annotationRegistry.getAnnotationActions(
+            line.getAnnotationName(), 
+            parseable,
+            index,
+            line.getAnnotationArguments()
+        );
+
+        if(actions.returnedObjectRequestCallback) {
+            resultConsumers.push(actions.returnedObjectRequestCallback);
+        }
+        if(actions.replaceAnnotationWithLine) {
+            newLines.push(replaceAnnotationWithLine);
+        }
+        if(actions.insertBelowLineOfApplication) {
+            delayedInsertions.push(actions.insertBelowLineOfApplication);
+        }
+        if(actions.insertAtEnd) {
+            finalInsertions.push(actions.insertAtEnd);
+        }
+        if(actions.insertAdditionalAnnotations) {
+            actions.insertAdditionalAnnotations.forEach(annotation => {
+                performAnnotationActions(
+                    new Line('"' + annotation + '"'), parseable, index, resultConsumers, newLines, delayedInsertions, finalInsertions
+                );
+            });
+        }
+    }
     
     /**
      * Return a parsed function from a string representation of one that contains annotations.
@@ -22,25 +57,9 @@ function Parser(_annotationRegistry, _logger) {
 
         parseable.forEachLine((l, i) => {
             if(l.isAnnotation()) {
-                const actions = annotationRegistry.getAnnotationActions(
-                    l.getAnnotationName(), 
-                    parseable,
-                    i,
-                    l.getAnnotationArguments()
+                performAnnotationActions(
+                    l, parseable, i, resultConsumers, newLines, delayedInsertions, finalInsertions
                 );
-
-                if(actions.returnedObjectRequestCallback) {
-                    resultConsumers.push(actions.returnedObjectRequestCallback);
-                }
-                if(actions.replaceAnnotationWithLine) {
-                    newLines.push(replaceAnnotationWithLine);
-                }
-                if(actions.insertBelowLineOfApplication) {
-                    delayedInsertions.push(actions.insertBelowLineOfApplication);
-                }
-                if(actions.insertAtEnd) {
-                    finalInsertions.push(actions.insertAtEnd);
-                }
             } else {
                 newLines.push(l.toString());
 

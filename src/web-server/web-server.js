@@ -7,7 +7,8 @@ function WebServer(_logger, _SpringButJs) {
         logger = _logger;
 
     let app,
-        port = 0;
+        port = 0,
+        actualPort = port;
 
     const HTTP_METHODS = {
         GET: 0,
@@ -23,6 +24,8 @@ function WebServer(_logger, _SpringButJs) {
         registeredControllerMappings = {}; // KEY: controllerName, VALUE: { mapping: 'string', registeredMethodMappings }
 
     this.HTTP_METHODS = HTTP_METHODS;
+    this.getPort = getPort;
+    this.setPort = setPort;
     this.startServer = startServer;
     this.isServerRunning = isServerRunning;
     this.addEndpoint = addEndpoint;
@@ -31,10 +34,19 @@ function WebServer(_logger, _SpringButJs) {
     this.registerMethodMapping = registerMethodMapping;
     this.addEndpoint = addEndpoint;
 
+    function getPort() {
+        return actualPort;
+    }
+
+    function setPort(value) {
+        port = value;
+    }
+
     function startServer() {
         app = require('express')();
         const server = app.listen(port,  () => {
-            logger.info('The Express server is running on port <' + server.address().port + '>!');
+            actualPort = server.address().port;
+            logger.info('The Express server is running on port <' + actualPort + '>!');
         });
     }
 
@@ -131,41 +143,43 @@ function WebServer(_logger, _SpringButJs) {
             startServer();
         }
 
-        let requestMethodString;
+        SpringButJs.waitForBean(controllerMapping.controllerName, bean => {
+            let requestMethodString;
 
-        switch(methodMapping.requestMethod) {
-            default:
-            case HTTP_METHODS.GET:
-                requestMethodString = 'get';
-                break;
-            case HTTP_METHODS.POST:
-                requestMethodString = 'post';
-                break;
-            case HTTP_METHODS.PUT:
-                requestMethodString = 'patch';
-                break;
-            case HTTP_METHODS.PATCH:
-                requestMethodString = 'patch';
-                break;
-            case HTTP_METHODS.DELETE:
-                requestMethodString = 'delete';
-                break;
-            case HTTP_METHODS.OPTIONS:
-                requestMethodString = 'options';
-                break;
-        }
+            switch(methodMapping.requestMethod) {
+                default:
+                case HTTP_METHODS.GET:
+                    requestMethodString = 'get';
+                    break;
+                case HTTP_METHODS.POST:
+                    requestMethodString = 'post';
+                    break;
+                case HTTP_METHODS.PUT:
+                    requestMethodString = 'patch';
+                    break;
+                case HTTP_METHODS.PATCH:
+                    requestMethodString = 'patch';
+                    break;
+                case HTTP_METHODS.DELETE:
+                    requestMethodString = 'delete';
+                    break;
+                case HTTP_METHODS.OPTIONS:
+                    requestMethodString = 'options';
+                    break;
+            }
 
-        const URL = getProperUrl(controllerMapping.mapping, methodMapping.mapping);
+            const URL = getProperUrl(controllerMapping.mapping, methodMapping.mapping);
 
-        app[requestMethodString](
-            URL, 
-            SpringButJs.inject(controllerMapping.controllerName)[methodMapping.name]
-        );
+            app[requestMethodString](
+                URL, 
+                SpringButJs.inject(controllerMapping.controllerName)[methodMapping.name]
+            );
 
-        logger.info(
-            'Created new REST endpoint:  ' + requestMethodString.toUpperCase() + 
-            ' ' + URL
-        );
+            logger.info(
+                'Created new REST endpoint:  ' + requestMethodString.toUpperCase() + 
+                ' ' + URL
+            );
+        });
     }
 
     function getProperUrl(controllerMapping, methodMapping) {

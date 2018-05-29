@@ -20,14 +20,23 @@ function loadAnnotations() {
     require('./annotations/component')(springButJs, logger);
     require('./annotations/controller')(springButJs, webServer, logger);
     require('./annotations/request-mapping')(springButJs, webServer, logger);
+    require('./annotations/post-construct')(springButJs, webServer, logger);
+}
+
+function openBrowser() {
+    require('opn')('http://localhost:' + webServer.getPort());
 }
 
 springButJs.createAnnotation = annotationRegistry.createAnnotation;
 springButJs.createBean = beanPool.addBean;
 springButJs.createProvider = beanPool.addProvider;
 springButJs.inject = beanPool.getBean;
+springButJs.hasBean = beanPool.beanExists;
+springButJs.waitForBean = beanPool.waitForBean;
 springButJs.scanComponents = componentScanner.scanDirectory;
 springButJs.printAvailableAnnotations = annotationRegistry.printAvailableAnnotations;
+springButJs.openBrowser = openBrowser;
+springButJs.setPort = webServer.setPort;
 
 loadAnnotations();
 

@@ -2,6 +2,7 @@ function parserFunction(SpringButJs, annotationController, webServer, logger) {
     const applicableLine = annotationController.getLineOfApplication();
 
     if(applicableLine.isFunction()) {
+        annotationController.insertAdditionalAnnotations('@Component');
         annotationController.requestReturnedObject(Component => {
             webServer.markAsController(Component.name);
         });
