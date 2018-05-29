@@ -155,7 +155,7 @@ function WebServer(_logger, _SpringButJs) {
                 break;
         }
 
-        const URL = (controllerMapping.mapping + methodMapping.mapping).replace(/\/+/g, '\/');
+        const URL = getProperUrl(controllerMapping.mapping, methodMapping.mapping);
 
         app[requestMethodString](
             URL, 
@@ -166,6 +166,16 @@ function WebServer(_logger, _SpringButJs) {
             'Created new REST endpoint:  ' + requestMethodString.toUpperCase() + 
             ' ' + URL
         );
+    }
+
+    function getProperUrl(controllerMapping, methodMapping) {
+        let returnValue = (controllerMapping + methodMapping).replace(/\/+/g, '\/');
+
+        if(returnValue.substring(returnValue.length - 1, returnValue.length) == '/') {
+            returnValue = returnValue.substring(0, returnValue.length - 1);
+        }
+
+        return returnValue;
     }
 }
 

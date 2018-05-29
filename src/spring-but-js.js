@@ -26,7 +26,7 @@ springButJs.createAnnotation = annotationRegistry.createAnnotation;
 springButJs.createBean = beanPool.addBean;
 springButJs.createProvider = beanPool.addProvider;
 springButJs.inject = beanPool.getBean;
-springButJs.enableComponentScan = componentScanner.scanDirectory;
+springButJs.scanComponents = componentScanner.scanDirectory;
 springButJs.printAvailableAnnotations = annotationRegistry.printAvailableAnnotations;
 
 loadAnnotations();
