@@ -8,11 +8,8 @@ Below is a small project that makes use of SpringButJs, showcasing simple IoC me
 
 ### main.js
 ``` javascript
-const SpringButJs = require('../spring-but-js/src/spring-but-js.js');
-
-SpringButJs.enableComponentScan('components').then(() => {
-    SpringButJs.inject('MyOtherComponent').myOtherFunction(); // Hello from MyService!
-});
+const SpringButJs = require('spring-but-js');
+SpringButJs.scanComponents('components');
 ```
 
 ### components/my-service.js
@@ -20,26 +17,29 @@ SpringButJs.enableComponentScan('components').then(() => {
 '@Service'
 function MyService() {
 
-    this.myFunction = function() {
-        console.log('Hello from MyService!');
+    this.getHello = function() {
+        return 'Hello from MyService!';
     }
 }
-
-return MyService;
 ```
 
-### components/my-other-component.js
+### components/my-controller.js
 ``` javascript
 '@Component'
-function MyOtherComponent() {
+'@RestController'
+'@RequestMapping("/hello")'
+function MyController() {
 
     '@Autowired'
     let myService;
 
-    this.myOtherFunction = function() {
-        myService.myFunction();
+    '@RequestMapping("/")'
+    this.myOtherFunction = function(req, res) {
+        res.send(myService.getHello());
     }
 }
+```
 
-return MyOtherComponent;
+```
+GET http://localhost/hello => 200: 'Hello from MyService!'
 ```
