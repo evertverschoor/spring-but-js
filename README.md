@@ -4,7 +4,7 @@
 Use annotations and Spring Inversion of Control in NodeJS! Easily set up a REST endpoint like you would in a Spring Boot application.
 
 # A demonstration
-Below is a small project that makes use of SpringButJs, showcasing simple IoC mechanics.
+Below is a small project that makes use of SpringButJs, showcasing simple IoC and Web MVC mechanics to set up a web service.
 
 ### main.js
 ``` javascript
