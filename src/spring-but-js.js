@@ -11,6 +11,7 @@ const
     BeanPool = require('./bean-pool'),
     ComponentScanner = require('./annotation-subsystem/component-scanner'),
     WebServer = require('./web-server/web-server'),
+    PackageJsonManager = require('./package-json-manager'),
     Logger = require('./logger');
 
 const
@@ -18,25 +19,26 @@ const
     logger = new Logger(),
     annotationRegistry = new AnnotationRegistry(logger),
     parser = new AnnotationParser(annotationRegistry, logger),
-    beanPool = new BeanPool(logger),
+    packageJsonManager = new PackageJsonManager(),
+    beanPool = new BeanPool(logger, packageJsonManager),
     componentScanner = new ComponentScanner(parser, logger),
     webServer = new WebServer(logger, springButJs);
 
 function loadAnnotations() {
     require('./annotations/autowired')(springButJs);
     require('./annotations/component')(springButJs, logger);
+    require('./annotations/bean')(springButJs, logger);
     require('./annotations/controller')(springButJs, webServer, logger);
     require('./annotations/request-mapping')(springButJs, webServer, logger);
     require('./annotations/post-construct')(springButJs, webServer, logger);
 }
 
-function openBrowser() {
-    require('opn')('http://localhost:' + webServer.getPort());
-}
-
 function scanComponents(directory) {
-    componentScanner.scanDirectory(directory).then(() => {
-        webServer.launchEndpoints();
+    return new Promise((resolve, reject) => {
+        componentScanner.scanDirectory(directory).then(() => {
+            webServer.launchEndpoints();
+            resolve();
+        }).catch(reject);
     });
 }
 
@@ -48,7 +50,7 @@ springButJs.hasBean = beanPool.beanExists;
 springButJs.waitForBean = beanPool.waitForBean;
 springButJs.scanComponents = scanComponents;
 springButJs.printAvailableAnnotations = annotationRegistry.printAvailableAnnotations;
-springButJs.openBrowser = openBrowser;
+springButJs.openBrowser = webServer.openBrowser;
 springButJs.setPort = webServer.setPort;
 
 loadAnnotations();

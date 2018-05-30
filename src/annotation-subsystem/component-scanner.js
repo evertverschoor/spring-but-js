@@ -45,7 +45,8 @@ function ComponentScanner(_parser, _logger) {
             fs.readdir(path, (err, files) => {
                 let parsedFiles = 0;
 
-                files.filter(f => isJsFile(f)).forEach(file => {
+                files = files.filter(f => isJsFile(f));
+                files.forEach(file => {
                     readFile(path + '/' + file).then(f => {
                         checkSyntax(f);
                         parser.parse(f.toString());

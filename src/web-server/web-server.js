@@ -15,7 +15,8 @@ function WebServer(_logger, _SpringButJs) {
 
     let app,
         port = 0,
-        actualPort = port;
+        actualPort = port,
+        isEndpointsLaunched = false;
 
     const HTTP_METHODS = {
         GET: 0,
@@ -39,6 +40,7 @@ function WebServer(_logger, _SpringButJs) {
     this.registerControllerMapping = registerControllerMapping;
     this.registerMethodMapping = registerMethodMapping;
     this.launchEndpoints = launchEndpoints;
+    this.openBrowser = openBrowser;
 
     function getPort() {
         return actualPort;
@@ -186,17 +188,23 @@ function WebServer(_logger, _SpringButJs) {
     }
 
     function launchEndpoints() {
-        Object.keys(registeredControllerMappings).forEach(controllerName => {
-            const 
-                controllerMapping = registeredControllerMappings[controllerName],
-                methodMappings = controllerMapping.getMethodMappings();
-
-            Object.keys(methodMappings).forEach(methodName => {
-                const methodMapping = methodMappings[methodName];
-
-                launchEndpoint(controllerMapping, methodMapping);
+        if(!isEndpointsLaunched) {
+            Object.keys(registeredControllerMappings).forEach(controllerName => {
+                const 
+                    controllerMapping = registeredControllerMappings[controllerName],
+                    methodMappings = controllerMapping.getMethodMappings();
+    
+                Object.keys(methodMappings).forEach(methodName => {
+                    const methodMapping = methodMappings[methodName];
+    
+                    launchEndpoint(controllerMapping, methodMapping);
+                });
             });
-        });
+
+            isEndpointsLaunched = true;
+        } else {
+            throw 'Endpoints are already launched!';
+        }
     }
 
     function getProperUrl(controllerMapping, methodMapping) {
@@ -207,6 +215,15 @@ function WebServer(_logger, _SpringButJs) {
         }
 
         return returnValue;
+    }
+
+    function openBrowser() {
+        const checker = setInterval(() => {
+            if(isEndpointsLaunched) {
+                require('opn')('http://localhost:' + getPort());
+                clearInterval(checker);
+            }
+        }, 5);
     }
 }
 

@@ -5,11 +5,14 @@
 //  as published by Sam Hocevar. See the COPYING file for more details.     //
 // ------------------------------------------------------------------------ //
 
-function BeanPool(logger) {
+function BeanPool(_logger, _packageJsonManager) {
 
     const 
+        logger = _logger,
+        packageJsonManager = _packageJsonManager,
         pool = {},
-        providers = {};
+        providers = {},
+        dependencies = packageJsonManager.getDependencies();
 
     this.addBean = addBean;
     this.addProvider = addProvider;
@@ -27,6 +30,7 @@ function BeanPool(logger) {
         if(isValidName(name)) {
             if(pool[name] == null) {
                 pool[name] = value;
+                logger.log('Created bean with name: ' + name);
             } else {
                 logger.error('A bean called "' + name + '" already exists!');
             }
@@ -49,13 +53,20 @@ function BeanPool(logger) {
         }
     }
 
+    function beanNameIsDependency(name) {
+        return dependencies.indexOf(name) > -1;
+    }
+
     function getBean(name) {
         name = name.toLowerCase();
 
         if(pool[name] != null) {
             return pool[name];
         } else if(providers[name] != null) {
-            pool[name] = providers[name]();
+            addBean(name, providers[name]());
+            return pool[name];
+        } else if(beanNameIsDependency(name)) {
+            addBean(name, require(name));
             return pool[name];
         } else {
             logger.error('No bean called "' + name + '" exists!');

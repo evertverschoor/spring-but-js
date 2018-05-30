@@ -21,7 +21,13 @@ function Parser(_annotationRegistry, _logger) {
      * Perform annocation actions based on what the annotation controller returns.
      * Can recursively call itself because annotations can sort of extend others.
      */
-    function performAnnotationActions(line, parseable, index, resultConsumers, newLines, delayedInsertions, finalInsertions) {
+    function performAnnotationActions(
+        line, parseable, index, 
+        resultConsumers, newLines, 
+        delayedInsertions, finalInsertions,
+        initialInsertions
+    ) {
+
         const actions = annotationRegistry.getAnnotationActions(
             line.getAnnotationName(), 
             parseable,
@@ -38,13 +44,18 @@ function Parser(_annotationRegistry, _logger) {
         if(actions.insertBelowLineOfApplication) {
             delayedInsertions.push(actions.insertBelowLineOfApplication);
         }
+        if(actions.insertAtBeginning) {
+            initialInsertions.push(actions.insertAtBeginning);
+        }
         if(actions.insertAtEnd) {
             finalInsertions.push(actions.insertAtEnd);
         }
         if(actions.insertAdditionalAnnotations) {
             actions.insertAdditionalAnnotations.forEach(annotation => {
                 performAnnotationActions(
-                    new Line('"' + annotation + '"'), parseable, index, resultConsumers, newLines, delayedInsertions, finalInsertions
+                    new Line('"' + annotation + '"'), parseable, index,
+                    resultConsumers, newLines, delayedInsertions, 
+                    finalInsertions, initialInsertions
                 );
             });
         }
@@ -60,12 +71,15 @@ function Parser(_annotationRegistry, _logger) {
             resultConsumers = [];
 
         let delayedInsertions = [],
-            finalInsertions = [];
+            finalInsertions = [],
+            initialInsertions = [];
 
         parseable.forEachLine((l, i) => {
             if(l.isAnnotation()) {
                 performAnnotationActions(
-                    l, parseable, i, resultConsumers, newLines, delayedInsertions, finalInsertions
+                    l, parseable, i, resultConsumers, 
+                    newLines, delayedInsertions, 
+                    finalInsertions, initialInsertions
                 );
             } else {
                 newLines.push(l.toString());
@@ -85,7 +99,7 @@ function Parser(_annotationRegistry, _logger) {
             });
         }
 
-        const joinedString = newLines.join('\n');
+        const joinedString = initialInsertions.concat(newLines).join('\n');
         let getResult = null;
 
         try {

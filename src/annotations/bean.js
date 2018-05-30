@@ -6,18 +6,25 @@
 // ------------------------------------------------------------------------ //
 
 function parse(SpringButJs, annotationController, logger) {
-    const applicableLine = annotationController.getLineOfApplication();
+    const 
+        applicableLine = annotationController.getLineOfApplication(),
+        args = annotationController.getArguments();
 
-    if(applicableLine.isFunction()) {
-        annotationController.insertBelowLineOfApplication('const _SpringButJs = arguments[arguments.length - 1];');
-        annotationController.insertAtBeginning('var module = {}');
-        annotationController.insertAtEnd('return ' + applicableLine.getVariableOrFunctionName() + ';');
+    let _ = 0;
+    console.log(_);
+
+    if(applicableLine.isMemberVariable()) {
+        const variableName = applicableLine.getVariableOrFunctionName();
+
         annotationController.requestReturnedObject(Component => {
-            SpringButJs.createProvider(Component.name, () => new Component(SpringButJs));
+            const beanName = args[0] != null ? args[0] : variableName;
+            SpringButJs.createProvider(beanName, () => {
+                return SpringButJs.inject(Component.name)[variableName]();
+            });
         });
     } else {
         annotationController.throwError(
-            'The @Component, @Service, @Configuration and @Repository annotations can only be placed over functions!'
+            'The @Bean annotation can only be applied to member variables!'
         );
     }
 }
@@ -27,13 +34,13 @@ function create(SpringButJs, logger) {
         return parse(SpringButJs, annotationController, logger);
     };
 
-    let aliases = ['Component', 'Service', 'Configuration', 'Repository'];
+    let aliases = ['Bean'];
 
     aliases.forEach(alias => {
         SpringButJs.createAnnotation(
             alias, 
             parseProxy, 
-            'Registers the annotated function expression as a singleton bean.'
+            'Registers the annotated member function as a bean.'
         );
     });
 }

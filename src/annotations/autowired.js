@@ -21,11 +21,16 @@ function hasValidAutowireableField(line) {
 }
 
 function parse(annotationController) {
-    const applicableLine = annotationController.getLineOfApplication();
+    const 
+        applicableLine = annotationController.getLineOfApplication(),
+        args = annotationController.getArguments();
 
     if(hasValidAutowireableField(applicableLine)) {
-        let variableName = applicableLine.getVariableOrFunctionName();
-        annotationController.insertBelowLineOfApplication(variableName + ' = _SpringButJs.inject(\'' + variableName + '\');');
+        const
+            variableName = applicableLine.getVariableOrFunctionName(),
+            beanName = args[0] != null ? args[0] : variableName;
+
+        annotationController.insertBelowLineOfApplication(variableName + ' = _SpringButJs.inject(\'' + beanName + '\');');
     } else {
         annotationController.throwError('Line "' + applicableLine.toString() + '" is not autowireable!');
     }

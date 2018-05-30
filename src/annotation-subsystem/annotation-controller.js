@@ -17,6 +17,7 @@ function AnnotationController(_logger, _parseable, _annotationIndex, _arguments)
         returnedObjectRequestCallback: null,
         replaceAnnotationWithLine: null,
         insertBelowLineOfApplication: null,
+        insertAtBeginning: null,
         insertAtEnd: null,
         insertAdditionalAnnotations: null
     }
@@ -24,6 +25,7 @@ function AnnotationController(_logger, _parseable, _annotationIndex, _arguments)
     this.getArguments = getArguments;
     this.getLineOfApplication = getLineOfApplication;
     this.insertBelowLineOfApplication = insertBelowLineOfApplication;
+    this.insertAtBeginning = insertAtBeginning;
     this.insertAtEnd = insertAtEnd;
     this.requestReturnedObject = requestReturnedObject;
     this.replaceAnnotationWithLine = replaceAnnotationWithLine;
@@ -47,11 +49,19 @@ function AnnotationController(_logger, _parseable, _annotationIndex, _arguments)
         }
     }
 
+    function insertAtBeginning(line) {
+        if(typeof line === 'string') {
+            actions.insertAtBeginning = line;
+        } else {
+            logger.error('AnnotationController.insertAtBeginning() must take a string parameter!');
+        }
+    }
+
     function insertAtEnd(line) {
         if(typeof line === 'string') {
             actions.insertAtEnd = line;
         } else {
-            logger.error('AnnotationController.insertBelowLineOfApplication() must take a string parameter!');
+            logger.error('AnnotationController.insertAtEnd() must take a string parameter!');
         }
     }
 
