@@ -1,3 +1,10 @@
+// ------------------------------------------------------------------------ //
+//  Copyright © 2018 Evert Verschoor                                        //
+//  This work is free. You can redistribute it and/or modify it under the   //
+//  terms of the Do What The Fuck You Want To Public License, Version 2,    //
+//  as published by Sam Hocevar. See the COPYING file for more details.     //
+// ------------------------------------------------------------------------ //
+
 function AnnotationController(_logger, _parseable, _annotationIndex, _arguments) {
 
     const 
@@ -10,7 +17,8 @@ function AnnotationController(_logger, _parseable, _annotationIndex, _arguments)
         returnedObjectRequestCallback: null,
         replaceAnnotationWithLine: null,
         insertBelowLineOfApplication: null,
-        insertAtEnd: null
+        insertAtEnd: null,
+        insertAdditionalAnnotations: null
     }
 
     this.getArguments = getArguments;
@@ -19,6 +27,7 @@ function AnnotationController(_logger, _parseable, _annotationIndex, _arguments)
     this.insertAtEnd = insertAtEnd;
     this.requestReturnedObject = requestReturnedObject;
     this.replaceAnnotationWithLine = replaceAnnotationWithLine;
+    this.insertAdditionalAnnotations = insertAdditionalAnnotations;
     this.throwError = throwError;
     this.getActions = getActions;
 
@@ -57,6 +66,16 @@ function AnnotationController(_logger, _parseable, _annotationIndex, _arguments)
     function replaceAnnotationWithLine(line) {
         if(typeof line === 'string') {
             actions.replaceAnnotationWithLine = line;
+        } else {
+            logger.error('AnnotationController.replaceAnnotationWithLine() must take a string parameter!');
+        }
+    }
+
+    function insertAdditionalAnnotations(annotations) {
+        if(typeof annotations === 'string') {
+            actions.insertAdditionalAnnotations = [annotations.substring(0, 1) == '@' ? annotations : '@' + annotations];
+        } else if(Array.isArray(annotations)) {
+            actions.insertAdditionalAnnotations = annotations.map(a => a.substring(0, 1) == '@' ? a : '@' + a);
         } else {
             logger.error('AnnotationController.replaceAnnotationWithLine() must take a string parameter!');
         }

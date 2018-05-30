@@ -8,17 +8,22 @@
 function parse(SpringButJs, annotationController, logger) {
     const applicableLine = annotationController.getLineOfApplication();
 
-    if(applicableLine.isFunction()) {
-        annotationController.insertBelowLineOfApplication('const _SpringButJs = arguments[arguments.length - 1];');
-        annotationController.insertAtEnd('return ' + applicableLine.getVariableOrFunctionName() + ';');
+    if(applicableLine.isMemberVariable()) {
+        const functionName = applicableLine.getVariableOrFunctionName();
+
         annotationController.requestReturnedObject(Component => {
-            SpringButJs.createProvider(Component.name, () => new Component(SpringButJs));
-            logger.log('Created bean with name: ' + Component.name.toLowerCase());
+            SpringButJs.waitForBean(Component.name, bean => {
+                if(bean.hasOwnProperty(functionName)) {
+                    bean[functionName]();
+                } else {
+                    annotationController.throwError(
+                        'The function annotated with @PostConstruct either does not exist or is inaccessible!'
+                    );
+                }
+            });
         });
     } else {
-        annotationController.throwError(
-            'The @Component, @Service, @Configuration and @Repository annotations can only be placed over functions!'
-        );
+        annotationController.throwError('@PostConstruct may only be applied to publicly accessible members!');
     }
 }
 
@@ -27,13 +32,13 @@ function create(SpringButJs, logger) {
         return parse(SpringButJs, annotationController, logger);
     };
 
-    let aliases = ['Component', 'Service', 'Configuration', 'Repository'];
+    let aliases = ['PostConstruct'];
 
     aliases.forEach(alias => {
         SpringButJs.createAnnotation(
             alias, 
             parseProxy, 
-            'Registers the annotated function expression as a singleton bean.'
+            'Registers the annotated function to be called when its bean is first created.'
         );
     });
 }

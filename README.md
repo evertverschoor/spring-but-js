@@ -1,7 +1,18 @@
-[![Build Status](https://travis-ci.org/evertverschoor/spring-but-js.svg?branch=master)](https://travis-ci.org/evertverschoor/spring-but-js)
+___
+This package is in an early stage and subject to frequent changes!
+___
 
 # Spring but JS
+[![Build Status](https://travis-ci.org/evertverschoor/spring-but-js.svg?branch=master)](https://travis-ci.org/evertverschoor/spring-but-js) [![NPM version](https://badge.fury.io/js/spring-but-js.svg)](https://www.npmjs.com/package/spring-but-js)
+
 Use annotations and Spring Inversion of Control in NodeJS! Easily set up a REST endpoint like you would in a Spring Boot application.
+
+Not actually affiliated with Spring.
+
+# Install
+```
+npm install spring-but-js --save
+```
 
 # A demonstration
 Below is a small project that makes use of SpringButJs, showcasing simple IoC and Web MVC mechanics to set up a web service.
@@ -25,7 +36,6 @@ function MyService() {
 
 ### components/my-controller.js
 ``` javascript
-'@Component'
 '@RestController'
 '@RequestMapping("/hello")'
 function MyController() {
