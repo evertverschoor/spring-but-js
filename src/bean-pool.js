@@ -5,14 +5,12 @@
 //  as published by Sam Hocevar. See the COPYING file for more details.     //
 // ------------------------------------------------------------------------ //
 
-function BeanPool(_logger, _packageJsonManager) {
+function BeanPool(_logger) {
 
     const 
         logger = _logger,
-        packageJsonManager = _packageJsonManager,
         pool = {},
-        providers = {},
-        dependencies = packageJsonManager.getDependencies();
+        providers = {};
 
     this.addBean = addBean;
     this.addProvider = addProvider;

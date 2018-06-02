@@ -11,7 +11,6 @@ const
     BeanPool = require('./bean-pool'),
     ComponentScanner = require('./annotation-subsystem/component-scanner'),
     WebServer = require('./web-server/web-server'),
-    PackageJsonManager = require('./package-json-manager'),
     Logger = require('./logger');
 
 function SpringButJs() {
@@ -21,8 +20,7 @@ function SpringButJs() {
         logger = new Logger(),
         annotationRegistry = new AnnotationRegistry(logger),
         parser = new AnnotationParser(annotationRegistry, logger),
-        packageJsonManager = new PackageJsonManager(),
-        beanPool = new BeanPool(logger, packageJsonManager),
+        beanPool = new BeanPool(logger),
         componentScanner = new ComponentScanner(parser, logger),
         webServer = new WebServer(logger, springButJs);
 
