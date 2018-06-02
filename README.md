@@ -1,9 +1,8 @@
-___
-This package is in an early stage and subject to frequent changes!
-___
+# Spring but JS 
 
-# Spring but JS
-[![Build Status](https://travis-ci.org/evertverschoor/spring-but-js.svg?branch=master)](https://travis-ci.org/evertverschoor/spring-but-js) [![NPM version](https://badge.fury.io/js/spring-but-js.svg)](https://www.npmjs.com/package/spring-but-js)
+[![NPM](https://nodei.co/npm/spring-but-js.png)](https://nodei.co/npm/spring-but-js/)
+
+[![Build Status](https://travis-ci.org/evertverschoor/spring-but-js.svg?branch=master)](https://travis-ci.org/evertverschoor/spring-but-js) 
 
 Use annotations and Spring Inversion of Control in NodeJS! Easily set up a REST endpoint like you would in a Spring Boot application.
 

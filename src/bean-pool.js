@@ -53,8 +53,13 @@ function BeanPool(_logger, _packageJsonManager) {
         }
     }
 
-    function beanNameIsDependency(name) {
-        return dependencies.indexOf(name) > -1;
+    function beanNameIsRequireable(name) {
+        try {
+            require(name);
+            return true;
+        } catch(err) {
+            return false;
+        }
     }
 
     function getBean(name) {
@@ -65,7 +70,7 @@ function BeanPool(_logger, _packageJsonManager) {
         } else if(providers[name] != null) {
             addBean(name, providers[name]());
             return pool[name];
-        } else if(beanNameIsDependency(name)) {
+        } else if(beanNameIsRequireable(name)) {
             addBean(name, require(name));
             return pool[name];
         } else {
