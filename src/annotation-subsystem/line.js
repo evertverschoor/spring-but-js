@@ -15,6 +15,7 @@ function Line(_lineAsString) {
     this.isMemberVariable = isMemberVariable;
     this.isVariable = isVariable;
     this.isAnnotation = isAnnotation;
+    this.isConst = isConst;
     this.getAnnotationName = getAnnotationName;
     this.getAnnotationArguments = getAnnotationArguments;
     this.getVariableOrFunctionName = getVariableOrFunctionName;
@@ -55,6 +56,10 @@ function Line(_lineAsString) {
     
             return firstCharIsQuote && lastCharIsQuote && hasAtSignAtSecondChar;
         }
+    }
+
+    function isConst() {
+        return lineAsString.indexOf('const ') == 0;
     }
 
     function getAnnotationName() {

@@ -9,7 +9,7 @@ const
     SpringButJsType = require('../src/spring-but-js'),
     SpringButJsInstance = new SpringButJsType();
 
-SpringButJsInstance.disableLogging();
+// SpringButJsInstance.disableLogging();
 let isComponentsScanned = false;
 
 describe('SpringButJs - autowiring components', () => {
@@ -17,6 +17,7 @@ describe('SpringButJs - autowiring components', () => {
     it('should properly autowire components, including the rimraf dependency', (done) => {
         scanComponents().then(() => {
             expect(SpringButJsInstance.inject('TestService').hasRimrafAvailable()).toBe(true);
+            expect(SpringButJsInstance.inject('TestService').hasHttpsAvailable()).toBe(true);
             expect(SpringButJsInstance.inject('TestComponent').getHello()).toEqual(
                 'Hello from TestComponent! Hello from TestService! Hello from TestRepository!'
             );

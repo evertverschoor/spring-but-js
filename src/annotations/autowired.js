@@ -5,33 +5,68 @@
 //  as published by Sam Hocevar. See the COPYING file for more details.     //
 // ------------------------------------------------------------------------ //
 
-function hasValidAutowireableField(line) {
-    if(line.toString) {
-        line = line.toString();
-    }
+function getAutowireNamesFromFunction(fromFunction) {
+    const 
+        signatureLine = fromFunction.toString().split('\n')[0],
+        argumentListAsString = signatureLine.substring(
+                signatureLine.indexOf('(') + 1,
+                signatureLine.indexOf(')')
+        ),
+        argumentList = argumentListAsString.split(',').map(a => formatBeanName(a));
 
-    line = line.trim();
-    
-    let isProperString = typeof line === 'string' && line.length > 0,
-        hasLetOrVar = line.indexOf('let ') == 0 || line.indexOf('var ') == 0,
-        hasConst = line.indexOf('const ') == 0,
-        hasThisAssignment = line.indexOf('this.') == 0;
-    
-    return isProperString && (hasLetOrVar || hasThisAssignment) && !hasConst;
+    return argumentList;
 }
 
-function parse(annotationController) {
+function formatBeanName(name) {
+    return name.replace('_', '').trim();
+}
+
+function parse(annotationController, SpringButJs) {
     const 
         applicableLine = annotationController.getLineOfApplication(),
-        args = annotationController.getArguments();
+        isMemberVariable = applicableLine.isMemberVariable(),
+        variableName = applicableLine.getVariableOrFunctionName(),
+        args = annotationController.getArguments(),
+        beanName = args[0] != null ? args[0] : variableName;
 
-    if(hasValidAutowireableField(applicableLine)) {
-        const
-            variableName = applicableLine.getVariableOrFunctionName(),
-            beanName = args[0] != null ? args[0] : variableName;
+    if(beanName.substring(0, 1) == '_') {
+        beanName = formatBeanName(beanName);
+    }
 
-        annotationController.insertBelowLineOfApplication(variableName + ' = _SpringButJs.inject(\'' + beanName + '\');');
-    } else {
+    // Set the value of a private variable that is not constant
+    // by inserting a line that sets it below
+    if(applicableLine.isVariable() && !applicableLine.isConst() && !applicableLine.isMemberVariable()) {
+        let lineToInsert = isMemberVariable ? 'this.' : '';
+        lineToInsert += variableName + ' = _SpringButJs.inject(\'' + beanName + '\');';
+
+        annotationController.insertBelowLineOfApplication(lineToInsert);
+    } 
+    
+    // Set the value of a public variable by accessing it from outside,
+    // functions are autowired like this too
+    else if(applicableLine.isMemberVariable()) {
+        annotationController.requestReturnedObject(ReturnedObject => {
+            // @Autowired always appears after @Component and such,
+            // so we are free to assume the bean IS indeed available.
+            const 
+                bean = SpringButJs.inject(ReturnedObject.name), 
+                member = bean[variableName];
+
+            if(typeof member === 'function') {
+                const injectables = [];
+
+                getAutowireNamesFromFunction(member).forEach(a => {
+                    injectables.push(SpringButJs.inject(a));
+                });
+
+                member.apply(bean, injectables);
+            } else {
+                bean[variableName] = SpringButJs.inject(beanName);
+            }
+        });
+    }
+
+    else {
         annotationController.throwError('Line "' + applicableLine.toString() + '" is not autowireable!');
     }
 }
@@ -42,11 +77,10 @@ function create(SpringButJs) {
     aliases.forEach(alias => {
         SpringButJs.createAnnotation(
             alias, 
-            parse, 
+            annotationController => parse(annotationController, SpringButJs), 
             'Automatically sets variable values based on available beans.'
         );
     });
 }
 
 module.exports = create;
-module.exports.lineHasValidAutowireableField = hasValidAutowireableField;

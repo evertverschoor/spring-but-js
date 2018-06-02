@@ -30,7 +30,10 @@ function BeanPool(_logger) {
                 pool[name] = value;
                 logger.log('Created bean with name: ' + name);
             } else {
-                logger.error('A bean called "' + name + '" already exists!');
+                logger.error(
+                    'A bean called "' + name + '" already exists!\n' + 
+                    '(are you defining more than one @Component in a single file?)'
+                );
             }
         } else {
             logger.error('"' + name + '" is an invalid bean name!');
@@ -44,7 +47,10 @@ function BeanPool(_logger) {
             if(pool[name] == null && providers[name] == null) {
                 providers[name] = providerFunction;
             } else {
-                logger.error('A bean called "' + name + '" already exists!');
+                logger.error(
+                    'A bean called "' + name + '" already exists!\n' + 
+                    '(are you defining more than one @Component in a single file?)'
+                );
             }
         } else {
             logger.error('"' + name + '" is an invalid bean name!');

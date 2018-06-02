@@ -177,7 +177,7 @@ function Parser(_annotationRegistry, _logger) {
             joinedString = parseResult.insertions.atBeginning.concat(parseResult.resultAsLines).join('\n'),
             result = getResultProvider(joinedString)();
         
-        checkResult(result);
+        checkResult(result, functionAsString);
         provideToConsumers(result, parseResult.resultConsumers);
 
         return joinedString;

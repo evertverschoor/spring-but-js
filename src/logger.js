@@ -38,7 +38,7 @@ function Logger() {
 
     function logError(message) {
         if(isEnabled) {
-            console.error('\x1b[31m', 'ERROR ' + PREFIX + message);
+            console.error('\x1b[31m', 'ERROR ' + PREFIX + message + '\n');
             console.trace();
             resetColour();
         }
