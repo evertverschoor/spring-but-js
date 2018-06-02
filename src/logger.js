@@ -8,34 +8,55 @@
 function Logger() {
 
     const PREFIX = '[SpringButJs]: ';
+    let isEnabled = true;
 
     this.log = log;
     this.info = info;
     this.error = logError;
     this.warn = warn;
+    this.enable = enable;
+    this.disable = disable;
 
     function resetColour() {
         console.log('\x1b[0m', '');
     }
 
     function log(message) {
-        console.log('\x1b[0m', 'LOG   ' + PREFIX + message);
-        resetColour();
+        if(isEnabled) {
+            console.log('\x1b[0m', 'LOG   ' + PREFIX + message);
+            resetColour();
+        }
+        
     }
 
     function info(message) {
-        console.log('\x1b[34m', 'INFO  ' + PREFIX + message);
-        resetColour();
+        if(isEnabled) {
+            console.log('\x1b[34m', 'INFO  ' + PREFIX + message);
+            resetColour();
+        }
     }
 
     function logError(message) {
-        console.error('\x1b[31m', 'ERROR ' + PREFIX + message);
-        resetColour();
+        if(isEnabled) {
+            console.error('\x1b[31m', 'ERROR ' + PREFIX + message);
+            console.trace();
+            resetColour();
+        }
     }
 
     function warn(message) {
-        console.error('\x1b[33m', 'WARN  ' + PREFIX + message);
-        resetColour();
+        if(isEnabled) {
+            console.error('\x1b[33m', 'WARN  ' + PREFIX + message);
+            resetColour();
+        }
+    }
+
+    function enable() {
+        isEnabled = true;
+    }
+
+    function disable() {
+        isEnabled = false;
     }
 }
 

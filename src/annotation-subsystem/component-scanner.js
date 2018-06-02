@@ -43,27 +43,31 @@ function ComponentScanner(_parser, _logger) {
     function scanDirectory(path) {
         return new Promise((resolve, reject) => {
             fs.readdir(path, (err, files) => {
-                let parsedFiles = 0;
+                if(err) {
+                    logger.error(err);
+                } else {
+                    let parsedFiles = 0;
 
-                files = files.filter(f => isJsFile(f));
-                files.forEach(file => {
-                    readFile(path + '/' + file).then(f => {
-                        checkSyntax(f);
-                        parser.parse(f.toString());
+                    files = files.filter(f => isJsFile(f));
+                    files.forEach(file => {
+                        readFile(path + '/' + file).then(f => {
+                            checkSyntax(f);
+                            parser.parse(f.toString());
 
-                        parsedFiles++;
-                        if(parsedFiles >= files.length) {
-                            resolve();
-                        }
-                    }).catch(err => {
-                        logger.error(err);
+                            parsedFiles++;
+                            if(parsedFiles >= files.length) {
+                                resolve();
+                            }
+                        }).catch(err => {
+                            logger.error(err);
 
-                        parsedFiles++;
-                        if(parsedFiles >= files.length) {
-                            resolve();
-                        }
+                            parsedFiles++;
+                            if(parsedFiles >= files.length) {
+                                resolve();
+                            }
+                        });
                     });
-                });
+                }
             });
         });
     }

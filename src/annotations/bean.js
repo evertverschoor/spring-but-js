@@ -11,7 +11,6 @@ function parse(SpringButJs, annotationController, logger) {
         args = annotationController.getArguments();
 
     let _ = 0;
-    console.log(_);
 
     if(applicableLine.isMemberVariable()) {
         const variableName = applicableLine.getVariableOrFunctionName();

@@ -2,9 +2,11 @@
   "name": "spring-but-js",
   "version": "1.0.0",
   "description": "Use features of the Spring Framework in NodeJS!",
-  "main": "src/spring-but-js.js",
+  "main": "index.js",
   "scripts": {
-    "test": "jasmine-node src"
+    "unit-tests": "jasmine-node src",
+    "integration-tests": "jasmine-node integration-test",
+    "test": "jasmine-node src && jasmine-node integration-test"
   },
   "keywords": [
     "dependency injection",
@@ -19,7 +21,9 @@
   "author": "Evert Verschoor",
   "license": "WTFPL",
   "devDependencies": {
-    "jasmine-node": "^1.14.5"
+    "jasmine-node": "^1.14.5",
+    "mkdirp": "^0.5.1",
+    "rimraf": "^2.6.2"
   },
   "dependencies": {
     "express": "^4.16.3",
