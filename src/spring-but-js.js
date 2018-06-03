@@ -34,8 +34,11 @@ function SpringButJs() {
     this.printAvailableAnnotations = annotationRegistry.printAvailableAnnotations;
     this.openBrowser = webServer.openBrowser;
     this.setPort = webServer.setPort;
+    this.getPort = webServer.getPort;
+    this.isServerRunning = webServer.isServerRunning;
     this.disableLogging = logger.disable;
     this.enableLogging = logger.enable;
+    this.shutDown = shutDown;
 
     function loadAnnotations() {
         require('./annotations/autowired')(springButJs);
@@ -53,6 +56,10 @@ function SpringButJs() {
                 resolve();
             }).catch(reject);
         });
+    }
+
+    function shutDown() {
+        webServer.stopServer();
     }
 
     loadAnnotations();

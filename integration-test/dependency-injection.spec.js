@@ -9,7 +9,7 @@ const
     SpringButJsType = require('../src/spring-but-js'),
     SpringButJsInstance = new SpringButJsType();
 
-// SpringButJsInstance.disableLogging();
+SpringButJsInstance.disableLogging();
 let isComponentsScanned = false;
 
 describe('SpringButJs - autowiring components', () => {

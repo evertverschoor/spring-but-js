@@ -5,7 +5,9 @@
 //  as published by Sam Hocevar. See the COPYING file for more details.     //
 // ------------------------------------------------------------------------ //
 
-const ControllerMapping = require('./controller-mapping');
+const 
+    ControllerMapping = require('./controller-mapping'),
+    express = require('express');
 
 function WebServer(_logger, _SpringButJs) {
 
@@ -14,9 +16,11 @@ function WebServer(_logger, _SpringButJs) {
         logger = _logger;
 
     let app,
+        server,
         port = 0,
         actualPort = port,
-        isEndpointsLaunched = false;
+        isEndpointsLaunched = false,
+        isActualPortReceived = false;
 
     const HTTP_METHODS = {
         GET: 0,
@@ -35,6 +39,8 @@ function WebServer(_logger, _SpringButJs) {
     this.getPort = getPort;
     this.setPort = setPort;
     this.startServer = startServer;
+    this.stopServer = stopServer;
+    this.isExpressInitialized = isExpressInitialized;
     this.isServerRunning = isServerRunning;
     this.markAsController = markAsController;
     this.registerControllerMapping = registerControllerMapping;
@@ -51,15 +57,30 @@ function WebServer(_logger, _SpringButJs) {
     }
 
     function startServer() {
-        app = require('express')();
-        const server = app.listen(port,  () => {
+        app = express();
+        app.use(express.json());
+
+        server = app.listen(port,  () => {
             actualPort = server.address().port;
             logger.info('The Express server is running on port <' + actualPort + '>!');
+            isActualPortReceived = true;
         });
     }
 
-    function isServerRunning() {
+    function stopServer() {
+        if(isServerRunning()) {
+            server.close();
+        } else {
+            throw 'Attempt to shut down the Express server but there is none running!';
+        }
+    }
+
+    function isExpressInitialized() {
         return app != null;
+    }
+
+    function isServerRunning() {
+        return isActualPortReceived;
     }
 
     function addEndpointForControllerAndMethod(controllerName, methodName) {
@@ -146,7 +167,7 @@ function WebServer(_logger, _SpringButJs) {
     }
 
     function launchEndpoint(controllerMapping, methodMapping) {
-        if(!isServerRunning()) {
+        if(!isExpressInitialized()) {
             startServer();
         }
 
@@ -161,7 +182,7 @@ function WebServer(_logger, _SpringButJs) {
                     requestMethodString = 'post';
                     break;
                 case HTTP_METHODS.PUT:
-                    requestMethodString = 'patch';
+                    requestMethodString = 'put';
                     break;
                 case HTTP_METHODS.PATCH:
                     requestMethodString = 'patch';
@@ -196,7 +217,6 @@ function WebServer(_logger, _SpringButJs) {
     
                 Object.keys(methodMappings).forEach(methodName => {
                     const methodMapping = methodMappings[methodName];
-    
                     launchEndpoint(controllerMapping, methodMapping);
                 });
             });
