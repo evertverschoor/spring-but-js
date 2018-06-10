@@ -7,10 +7,12 @@
 
 const 
     SpringButJsType = require('../src/spring-but-js'),
-    SpringButJsInstance = new SpringButJsType();
+    SpringButJsInstance = new SpringButJsType(),
+    SPEC_COUNT = 2; // <= Keep this up to date!
 
 SpringButJsInstance.disableLogging();
-let isComponentsScanned = false;
+let isComponentsScanned = false,
+    finishedSpecCount = 0;
 
 describe('SpringButJs - parsing @IsAlways2', () => {
 
@@ -20,6 +22,7 @@ describe('SpringButJs - parsing @IsAlways2', () => {
         scanComponents().then(() => {
             const testComponent = SpringButJsInstance.inject('HasMemberVariable');
             expect(testComponent.testVariable).toEqual(2);
+            onSpecFinished();
             done();
         });
     });
@@ -28,10 +31,19 @@ describe('SpringButJs - parsing @IsAlways2', () => {
         scanComponents().then(() => {
             const testComponent = SpringButJsInstance.inject('HasPrivateVariable');
             expect(testComponent.getTestVariable()).toBeUndefined();
+            onSpecFinished();
             done();
         });
     });
 });
+
+// Because we can't use afterAll() to shut down...
+function onSpecFinished() {
+    finishedSpecCount++;
+    if(finishedSpecCount >= SPEC_COUNT) {
+        SpringButJsInstance.shutDown();
+    }
+}
 
 function scanComponents() {
     return new Promise((resolve, reject) => {

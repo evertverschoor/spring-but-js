@@ -6,21 +6,21 @@
 // ------------------------------------------------------------------------ //
 
 const 
-    ControllerMapping = require('./controller-mapping'),
-    express = require('express');
+    ControllerMapping = require('./controller-mapping');
 
-function WebServer(_logger, _SpringButJs) {
+function WebServer(_logger, _beanPool) {
 
     const 
-        SpringButJs = _SpringButJs,
+        beanPool = _beanPool,
         logger = _logger;
 
     let app,
+        express,
         server,
         port = 0,
         actualPort = port,
         isEndpointsLaunched = false,
-        isActualPortReceived = false;
+        actualPortReceived = false;
 
     const HTTP_METHODS = {
         GET: 0,
@@ -57,13 +57,15 @@ function WebServer(_logger, _SpringButJs) {
     }
 
     function startServer() {
-        app = express();
+        app = beanPool.getBean('app');
+        express = beanPool.getBean('express');
+
         app.use(express.json());
 
         server = app.listen(port,  () => {
             actualPort = server.address().port;
             logger.info('The Express server is running on port <' + actualPort + '>!');
-            isActualPortReceived = true;
+            actualPortReceived = true;
         });
     }
 
@@ -80,7 +82,7 @@ function WebServer(_logger, _SpringButJs) {
     }
 
     function isServerRunning() {
-        return isActualPortReceived;
+        return actualPortReceived;
     }
 
     function addEndpointForControllerAndMethod(controllerName, methodName) {
@@ -199,7 +201,7 @@ function WebServer(_logger, _SpringButJs) {
 
             app[requestMethodString](
                 URL, 
-                SpringButJs.inject(controllerMapping.controllerName)[methodMapping.name]
+                beanPool.getBean(controllerMapping.controllerName)[methodMapping.name]
             );
 
             logger.info(
@@ -209,6 +211,10 @@ function WebServer(_logger, _SpringButJs) {
     }
 
     function launchEndpoints() {
+        if(!isServerRunning()) {
+            startServer();
+        }
+
         if(!isEndpointsLaunched) {
             Object.keys(registeredControllerMappings).forEach(controllerName => {
                 const 

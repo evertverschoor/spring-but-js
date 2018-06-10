@@ -22,7 +22,7 @@ function SpringButJs() {
         parser = new AnnotationParser(annotationRegistry, logger),
         beanPool = new BeanPool(logger),
         componentScanner = new ComponentScanner(parser, logger),
-        webServer = new WebServer(logger, springButJs);
+        webServer = new WebServer(logger, beanPool);
 
     this.createAnnotation = annotationRegistry.createAnnotation;
     this.createBean = beanPool.addBean;

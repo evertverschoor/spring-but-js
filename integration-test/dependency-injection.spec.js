@@ -7,10 +7,12 @@
 
 const 
     SpringButJsType = require('../src/spring-but-js'),
-    SpringButJsInstance = new SpringButJsType();
+    SpringButJsInstance = new SpringButJsType(),
+    SPEC_COUNT = 3; // <= Keep this up to date!
 
 SpringButJsInstance.disableLogging();
-let isComponentsScanned = false;
+let isComponentsScanned = false,
+    finishedSpecCount = 0;
 
 describe('SpringButJs - autowiring components', () => {
 
@@ -22,6 +24,7 @@ describe('SpringButJs - autowiring components', () => {
                 'Hello from TestComponent! Hello from TestService! Hello from TestRepository!'
             );
 
+            onSpecFinished();
             done();
         });
     });
@@ -30,6 +33,8 @@ describe('SpringButJs - autowiring components', () => {
         scanComponents().then(() => {
             expect(SpringButJsInstance.inject('fooBean')).toEqual('foo');
             expect(SpringButJsInstance.inject('bar')).toEqual('bar');
+
+            onSpecFinished();
             done();
         });
     });
@@ -37,10 +42,19 @@ describe('SpringButJs - autowiring components', () => {
     it('should properly call the @PostConstruct function when found', (done) => {
         scanComponents().then(() => {
             expect(SpringButJsInstance.inject('TestRepository').getFoo()).toEqual('foo');
+            onSpecFinished();
             done();
         });
     });
 });
+
+// Because we can't use afterAll() to shut down...
+function onSpecFinished() {
+    finishedSpecCount++;
+    if(finishedSpecCount >= SPEC_COUNT) {
+        SpringButJsInstance.shutDown();
+    }
+}
 
 function scanComponents() {
     return new Promise((resolve, reject) => {

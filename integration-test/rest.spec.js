@@ -9,7 +9,7 @@ const
     SpringButJsType = require('../src/spring-but-js'),
     SpringButJsInstance = new SpringButJsType(),
     http = require('http'),
-    SPEC_COUNT = 7; // <= Keep this up to date!
+    SPEC_COUNT = 8; // <= Keep this up to date!
 
 SpringButJsInstance.disableLogging();
 let isComponentsScanned = false,
@@ -81,6 +81,16 @@ describe('SpringButJs - creating REST endpoints', () => {
         scanComponents().then(() => {
             doRequest('/test1/hello', 'OPTIONS').then(response => {
                 expect(response).toEqual('[OPTIONS] Hello from Test1Controller!');
+                onSpecFinished();
+                done();
+            });
+        });
+    });
+
+    it('should properly serve static content from public_html', (done) => {
+        scanComponents().then(() => {
+            doRequest('/hello-world.txt', 'GET').then(response => {
+                expect(response).toEqual('Hello world!');
                 onSpecFinished();
                 done();
             });

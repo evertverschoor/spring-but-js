@@ -5,6 +5,8 @@
 //  as published by Sam Hocevar. See the COPYING file for more details.     //
 // ------------------------------------------------------------------------ //
 
+const express = require('express');
+
 function BeanPool(_logger) {
 
     const 
@@ -66,6 +68,10 @@ function BeanPool(_logger) {
         }
     }
 
+    function isExpressBean(name) {
+        return name == 'app' || name == 'express';
+    }
+
     function getBean(name) {
         name = name.toLowerCase();
 
@@ -74,6 +80,11 @@ function BeanPool(_logger) {
         } else if(providers[name] != null) {
             addBean(name, providers[name]());
             return pool[name];
+        } else if(isExpressBean(name)) {
+            addBean('express', express);
+            addBean('app', express());
+
+            return getBean(name);
         } else if(beanNameIsRequireable(name)) {
             addBean(name, require(name));
             return pool[name];
