@@ -12,6 +12,7 @@ function parse(SpringButJs, annotationController, logger) {
         annotationController.insertBelowLineOfApplication('const _SpringButJs = arguments[arguments.length - 1];');
         annotationController.insertAtBeginning('var module = {}');
         annotationController.insertAtEnd('return ' + applicableLine.getVariableOrFunctionName() + ';');
+
         annotationController.requestReturnedObject(Component => {
             SpringButJs.createProvider(Component.name, () => new Component(SpringButJs));
         });

@@ -19,7 +19,8 @@ function AnnotationController(_logger, _parseable, _annotationIndex, _arguments)
         insertBelowLineOfApplication: null,
         insertAtBeginning: null,
         insertAtEnd: null,
-        insertAdditionalAnnotations: null
+        insertAdditionalAnnotations: null,
+        abandonParsing: false
     }
 
     this.getArguments = getArguments;
@@ -31,6 +32,7 @@ function AnnotationController(_logger, _parseable, _annotationIndex, _arguments)
     this.replaceAnnotationWithLine = replaceAnnotationWithLine;
     this.insertAdditionalAnnotations = insertAdditionalAnnotations;
     this.throwError = throwError;
+    this.abandonParsing = abandonParsing;
     this.getActions = getActions;
 
     function getArguments() {
@@ -93,6 +95,10 @@ function AnnotationController(_logger, _parseable, _annotationIndex, _arguments)
 
     function throwError(message) {
         logger.error(message);
+    }
+
+    function abandonParsing() {
+        actions.abandonParsing = true;
     }
 
     function getActions() {

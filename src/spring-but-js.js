@@ -11,7 +11,8 @@ const
     BeanPool = require('./bean-pool'),
     ComponentScanner = require('./annotation-subsystem/component-scanner'),
     WebServer = require('./web-server/web-server'),
-    Logger = require('./logger');
+    Logger = require('./logger'),
+    ProfileManager = require('./profile-manager');
 
 function SpringButJs() {
 
@@ -22,7 +23,8 @@ function SpringButJs() {
         parser = new AnnotationParser(annotationRegistry, logger),
         beanPool = new BeanPool(logger),
         componentScanner = new ComponentScanner(parser, logger),
-        webServer = new WebServer(logger, beanPool);
+        webServer = new WebServer(logger, beanPool),
+        profileManager = new ProfileManager(logger);
 
     this.createAnnotation = annotationRegistry.createAnnotation;
     this.createBean = beanPool.addBean;
@@ -38,15 +40,21 @@ function SpringButJs() {
     this.isServerRunning = webServer.isServerRunning;
     this.disableLogging = logger.disable;
     this.enableLogging = logger.enable;
+    this.setProfile = profileManager.setProfile;
     this.shutDown = shutDown;
 
-    function loadAnnotations() {
+    function onLoad() {
+        // Load all annotations
         require('./annotations/autowired')(springButJs);
         require('./annotations/component')(springButJs, logger);
         require('./annotations/bean')(springButJs, logger);
         require('./annotations/controller')(springButJs, webServer, logger);
         require('./annotations/request-mapping')(springButJs, webServer, logger);
         require('./annotations/post-construct')(springButJs, webServer, logger);
+        require('./annotations/profile')(springButJs, profileManager);
+
+        // Parse cargs
+        profileManager.parseCommandLineArguments(process.argv);
     }
 
     function scanComponents(directory) {
@@ -62,7 +70,7 @@ function SpringButJs() {
         webServer.stopServer();
     }
 
-    loadAnnotations();
+    onLoad();
 }
 
 module.exports = SpringButJs;

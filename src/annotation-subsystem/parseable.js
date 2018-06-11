@@ -17,8 +17,10 @@ function Parseable(_functionAsString) {
     this.getNextNonAnnotationLine = getNextNonAnnotationLine;
 
     function forEachLine(callback) {
-        for(let i = 0; i < lines.length; i++) {
-            callback(lines[i], i);
+        let stop = false;
+
+        for(let i = 0; i < lines.length && !stop; i++) {
+            callback(lines[i], i, () => stop = true);
         }
     }
 

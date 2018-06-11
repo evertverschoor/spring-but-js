@@ -1,6 +1,6 @@
 {
   "name": "spring-but-js",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Use features of the Spring Framework in NodeJS!",
   "main": "index.js",
   "scripts": {

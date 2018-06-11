@@ -52,3 +52,6 @@ function MyController() {
 ```
 GET http://localhost/hello => 200: 'Hello from MyService!'
 ```
+
+# Documentation
+View the [GitHub Wiki](https://github.com/evertverschoor/spring-but-js/wiki) for more documentation!

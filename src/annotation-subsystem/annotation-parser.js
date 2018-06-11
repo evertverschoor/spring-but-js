@@ -41,29 +41,41 @@ function Parser(_annotationRegistry, _logger) {
             line.getAnnotationArguments()
         );
 
-        if(actions.returnedObjectRequestCallback) {
-            resultConsumers.push(actions.returnedObjectRequestCallback);
-        }
-        if(actions.replaceAnnotationWithLine) {
-            resultAsLines.push(replaceAnnotationWithLine);
-        }
-        if(actions.insertBelowLineOfApplication) {
-            delayedInsertions.push(actions.insertBelowLineOfApplication);
-        }
-        if(actions.insertAtBeginning) {
-            initialInsertions.push(actions.insertAtBeginning);
-        }
-        if(actions.insertAtEnd) {
-            finalInsertions.push(actions.insertAtEnd);
-        }
-        if(actions.insertAdditionalAnnotations) {
-            actions.insertAdditionalAnnotations.forEach(annotation => {
-                performAnnotationActions(
-                    new Line('"' + annotation + '"'), parseable, index,
-                    resultConsumers, resultAsLines, delayedInsertions, 
-                    finalInsertions, initialInsertions
-                );
-            });
+        if(actions.abandonParsing) {
+            return false;
+        } else {
+            if(actions.returnedObjectRequestCallback) {
+                resultConsumers.push(actions.returnedObjectRequestCallback);
+            }
+            if(actions.replaceAnnotationWithLine) {
+                resultAsLines.push(replaceAnnotationWithLine);
+            }
+            if(actions.insertBelowLineOfApplication) {
+                delayedInsertions.push(actions.insertBelowLineOfApplication);
+            }
+            if(actions.insertAtBeginning) {
+                initialInsertions.push(actions.insertAtBeginning);
+            }
+            if(actions.insertAtEnd) {
+                finalInsertions.push(actions.insertAtEnd);
+            }
+            if(actions.insertAdditionalAnnotations) {
+                actions.insertAdditionalAnnotations.forEach(annotation => {
+                    const continueParsing = performAnnotationActions(
+                        new Line('"' + annotation + '"'), parseable, index,
+                        resultConsumers, resultAsLines, delayedInsertions, 
+                        finalInsertions, initialInsertions
+                    );
+
+                    if(!continueParsing) {
+                        return false;
+                    }
+                });
+
+                return true;
+            } else {
+                return true;
+            }
         }
     }
 
@@ -128,7 +140,7 @@ function Parser(_annotationRegistry, _logger) {
      * with the result and additional insertions to be done after.
      */
     function getParseResult(parseable, annotationHandler) {
-        const returnValue = {
+        let returnValue = {
             resultAsLines: [],
             resultConsumers: [],
             insertions: {
@@ -139,13 +151,18 @@ function Parser(_annotationRegistry, _logger) {
 
         let delayedInsertions = [];
 
-        parseable.forEachLine((l, i) => {
+        parseable.forEachLine((l, i, done) => {
             if(l.isAnnotation()) {
-                annotationHandler(
+                const continueParsing = annotationHandler(
                     l, parseable, i, returnValue.resultConsumers, 
                     returnValue.resultAsLines, delayedInsertions, 
                     returnValue.insertions.atEnd, returnValue.insertions.atBeginning
                 );
+                
+                if(!continueParsing) {
+                    returnValue = false;
+                    done();
+                }
             } else {
                 returnValue.resultAsLines.push(l.toString());
 
@@ -170,17 +187,21 @@ function Parser(_annotationRegistry, _logger) {
         const 
             parseable = new Parseable(functionAsString),
             parseResult = getParseResult(parseable, performAnnotationActions);
-        
-        insertAtEnd(parseResult.resultAsLines, parseResult.insertions.atEnd);
 
-        const
-            joinedString = parseResult.insertions.atBeginning.concat(parseResult.resultAsLines).join('\n'),
-            result = getResultProvider(joinedString)();
-        
-        checkResult(result, functionAsString);
-        provideToConsumers(result, parseResult.resultConsumers);
+        if(parseResult) {
+            insertAtEnd(parseResult.resultAsLines, parseResult.insertions.atEnd);
 
-        return joinedString;
+            const
+                joinedString = parseResult.insertions.atBeginning.concat(parseResult.resultAsLines).join('\n'),
+                result = getResultProvider(joinedString)();
+            
+            checkResult(result, functionAsString);
+            provideToConsumers(result, parseResult.resultConsumers);
+
+            return joinedString;
+        } else {
+            return false;
+        }
     }
 }
 

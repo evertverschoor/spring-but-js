@@ -52,6 +52,7 @@ function ComponentScanner(_parser, _logger) {
                     files.forEach(file => {
                         readFile(path + '/' + file).then(f => {
                             checkSyntax(f);
+
                             parser.parse(f.toString());
 
                             parsedFiles++;
