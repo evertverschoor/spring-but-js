@@ -5,43 +5,17 @@
 //  as published by Sam Hocevar. See the COPYING file for more details.     //
 // ------------------------------------------------------------------------ //
 
-function parse(SpringButJs, annotationController, logger) {
-    const 
-        applicableLine = annotationController.getLineOfApplication(),
-        args = annotationController.getArguments();
+function Bean(name) {
 
-    let _ = 0;
+    const customBeanName = name || null;
 
-    if(applicableLine.isMemberVariable()) {
-        const variableName = applicableLine.getVariableOrFunctionName();
+    this.isBean = true;
+    this.customBeanName = customBeanName;
+    this.hasCustomBeanName = hasCustomBeanName;
 
-        annotationController.requestReturnedObject(Component => {
-            const beanName = args[0] != null ? args[0] : variableName;
-            SpringButJs.createProvider(beanName, () => {
-                return SpringButJs.inject(Component.name)[variableName]();
-            });
-        });
-    } else {
-        annotationController.throwError(
-            'The @Bean annotation can only be applied to member variables!'
-        );
+    function hasCustomBeanName() {
+        return customBeanName.length > 0;
     }
 }
 
-function create(SpringButJs, logger) {
-    let parseProxy = annotationController => {
-        return parse(SpringButJs, annotationController, logger);
-    };
-
-    let aliases = ['Bean'];
-
-    aliases.forEach(alias => {
-        SpringButJs.createAnnotation(
-            alias, 
-            parseProxy, 
-            'Registers the annotated member function as a bean.'
-        );
-    });
-}
-
-module.exports = create;
+module.exports = Bean;

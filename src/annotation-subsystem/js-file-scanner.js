@@ -7,13 +7,11 @@
 
 const fs = require('fs');
 
-function ComponentScanner(_parser, _logger) {
+function JsFileScanner(_logger) {
 
-    const
-        parser = _parser,
-        logger = _logger;
+    const logger = _logger;
 
-    this.scanDirectory = scanDirectory;
+    this.getJsContentsInDirectory = getJsContentsInDirectory;
 
     function readFile(path) {
         return new Promise((resolve, reject) => {
@@ -40,31 +38,32 @@ function ComponentScanner(_parser, _logger) {
         return file.split('').reverse().join('').indexOf('sj.') == 0;
     }
 
-    function scanDirectory(path) {
+    function getJsContentsInDirectory(path) {
         return new Promise((resolve, reject) => {
             fs.readdir(path, (err, files) => {
                 if(err) {
                     logger.error(err);
                 } else {
-                    let parsedFiles = 0;
+                    let parsedFiles = 0,
+                        returnValue = [];
 
                     files = files.filter(f => isJsFile(f));
                     files.forEach(file => {
                         readFile(path + '/' + file).then(f => {
                             checkSyntax(f);
 
-                            parser.parse(f.toString());
+                            returnValue.push(f.toString());
 
                             parsedFiles++;
                             if(parsedFiles >= files.length) {
-                                resolve();
+                                resolve(returnValue);
                             }
                         }).catch(err => {
                             logger.error(err);
 
                             parsedFiles++;
                             if(parsedFiles >= files.length) {
-                                resolve();
+                                resolve(returnValue);
                             }
                         });
                     });
@@ -74,4 +73,4 @@ function ComponentScanner(_parser, _logger) {
     }
 }
 
-module.exports = ComponentScanner;
+module.exports = JsFileScanner;

@@ -5,36 +5,26 @@
 //  as published by Sam Hocevar. See the COPYING file for more details.     //
 // ------------------------------------------------------------------------ //
 
-function parserFunction(SpringButJs, annotationController, profileManager) {
-    const 
-        applicableLine = annotationController.getLineOfApplication(),
-        annotationArguments = annotationController.getArguments();
+function Profile(
+    profile1, profile2, profile3, profile4, profile5, 
+    profile6, profile7, profile8, profile9, profile10
+) {
+    
+    this.runOnProfiles = [];
+    this.dontRunOnProfiles = [];
 
-    if(applicableLine.isFunction()) {
-        if(annotationArguments.length > 0 && !profileManager.isCurrentProfile(annotationArguments[0])) {
-            annotationController.abandonParsing();
+    [   
+        profile1, profile2, profile3, profile4, profile5, 
+        profile6, profile7, profile8, profile9, profile10
+    ].forEach(prof => {
+        if(prof != null) {
+            if(prof.substring(0, 1) == '!') {
+                this.dontRunOnProfiles.push(prof.replace('!', ''));
+            } else {
+                this.runOnProfiles.push(prof);
+            }
         }
-    } else {
-        annotationController.throwError(
-            'The @Profile annotation can only be placed over functions!'
-        );
-    }
-}
-
-function creationFunction(SpringButJs, profileManager) {
-    let proxyParserFunction = annotationController => {
-        return parserFunction(SpringButJs, annotationController, profileManager);
-    };
-
-    let aliases = ['Profile'];
-
-    aliases.forEach(alias => {
-        SpringButJs.createAnnotation(
-            alias, 
-            proxyParserFunction, 
-            'Limits the annotated component to only be used under the given profile.'
-        );
     });
 }
 
-module.exports = creationFunction;
+module.exports = Profile;

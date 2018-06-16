@@ -5,73 +5,21 @@
 //  as published by Sam Hocevar. See the COPYING file for more details.     //
 // ------------------------------------------------------------------------ //
 
-const AnnotationController = require('./annotation-controller');
-
 function AnnotationRegistry(_logger) {
 
     const 
-        registry = {},
-        docs = {},
-        logger = _logger;
+        logger = _logger,
+        registry = {};
 
-    this.createAnnotation = createAnnotation;
-    this.getAnnotationActions = getAnnotationActions;
-    this.printAvailableAnnotations = printAvailableAnnotations;
+    this.register = register;
+    this.getAnnotation = getAnnotation;
 
-    function isValidAnnotationName(name) {
-        return typeof name === 'string' && name.length > 0;
-    }
-    
-    function isValidParseFunction(parseFunction) {
-        return typeof parseFunction === 'function';
-    }
-    
-    function createAnnotation(name, parseFunction, documentation) {
-        if(!isValidAnnotationName(name)) {
-            throw 'Please pass a valid annotation name!';
-        }
-        if(!isValidParseFunction(parseFunction)) {
-            throw 'Please pass a valid parse function!';
-        }
-    
-        registry[name] = parseFunction;
-
-        if(documentation != null) {
-            docs[name] = documentation;
-        }
+    function register(annotationFunction) {
+        registry[annotationFunction.name] = annotationFunction;
     }
 
-    function getAnnotationActions(annotationName, parseable, annotationIndex, annotationArguments) {
-        let parseFunction = registry[annotationName],
-            controller = new AnnotationController(logger, parseable, annotationIndex, annotationArguments);
-
-        if(parseFunction == null) {
-            parseFunction = registry[annotationName.replace('@', '')];
-
-            if(parseFunction == null) {
-                logger.error('No annotation called "' + annotationName + '" exists!');
-                return;
-            } else {
-                parseFunction(controller);
-            }
-        } else {
-            parseFunction(controller);
-        }
-
-        return controller.getActions();
-    }
-
-
-    function printAvailableAnnotations() {
-        let annotationNames = Object.keys(registry),
-            stringToPrint = '';
-
-        annotationNames.forEach(annotationName => {
-            let documentation = docs[annotationName] != null ? docs[annotationName] : 'No documentation available.';
-            stringToPrint += '@' + annotationName + '\n' + documentation + '\n\n';
-        });
-
-        logger.info('The following annotations are available for use:\n\n' + stringToPrint);
+    function getAnnotation(name) {
+        return registry[name];
     }
 }
 

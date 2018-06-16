@@ -5,11 +5,9 @@
 //  as published by Sam Hocevar. See the COPYING file for more details.     //
 // ------------------------------------------------------------------------ //
 
-function MethodMapping(_name, _mapping, _requestMethod) {
+function Service() {
 
-    this.name = _name;
-    this.mapping = _mapping;
-    this.requestMethod = _requestMethod;
+    this.isComponent = true;
 }
 
-module.exports = MethodMapping;
+module.exports = Service;

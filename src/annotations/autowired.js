@@ -5,82 +5,44 @@
 //  as published by Sam Hocevar. See the COPYING file for more details.     //
 // ------------------------------------------------------------------------ //
 
-function getAutowireNamesFromFunction(fromFunction) {
-    const 
-        signatureLine = fromFunction.toString().split('\n')[0],
-        argumentListAsString = signatureLine.substring(
-                signatureLine.indexOf('(') + 1,
-                signatureLine.indexOf(')')
-        ),
-        argumentList = argumentListAsString.split(',').map(a => formatBeanName(a));
+const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+const ARGUMENT_NAMES = /([^\s,]+)/g;
 
-    return argumentList;
-}
+function Autowired(
+    name1, name2, name3, name4, name5, 
+    name6, name7, name8, name9, name10
+) {
+    let customBeanNames = [];
 
-function formatBeanName(name) {
-    return name.replace('_', '').trim();
-}
+    this.isAutowired = true;
+    this.customBeanNames = customBeanNames;
 
-function parse(annotationController, SpringButJs) {
-    const 
-        applicableLine = annotationController.getLineOfApplication(),
-        isMemberVariable = applicableLine.isMemberVariable(),
-        variableName = applicableLine.getVariableOrFunctionName(),
-        args = annotationController.getArguments(),
-        beanName = args[0] != null ? args[0] : variableName;
+    this.hasCustomBeanNames = hasCustomBeanNames;
+    this.getFunctionParameterNames = getFunctionParameterNames;
 
-    if(beanName.substring(0, 1) == '_') {
-        beanName = formatBeanName(beanName);
+    function hasCustomBeanNames() {
+        return customBeanNames.length > 0;
     }
 
-    // Set the value of a private variable that is not constant
-    // by inserting a line that sets it below
-    if(applicableLine.isVariable() && !applicableLine.isConst() && !applicableLine.isMemberVariable()) {
-        let lineToInsert = isMemberVariable ? 'this.' : '';
-        lineToInsert += variableName + ' = _SpringButJs.inject(\'' + beanName + '\');';
+    function getFunctionParameterNames(fromFunction) {
+        let fnStr = fromFunction.toString().replace(STRIP_COMMENTS, ''),
+            result = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
 
-        annotationController.insertBelowLineOfApplication(lineToInsert);
-    } 
-    
-    // Set the value of a public variable by accessing it from outside,
-    // functions are autowired like this too
-    else if(applicableLine.isMemberVariable()) {
-        annotationController.requestReturnedObject(ReturnedObject => {
-            // @Autowired always appears after @Component and such,
-            // so we are free to assume the bean IS indeed available.
-            const 
-                bean = SpringButJs.inject(ReturnedObject.name), 
-                member = bean[variableName];
+        if(result === null) {
+            result = [];
+        }
 
-            if(typeof member === 'function') {
-                const injectables = [];
-
-                getAutowireNamesFromFunction(member).forEach(a => {
-                    injectables.push(SpringButJs.inject(a));
-                });
-
-                member.apply(bean, injectables);
-            } else {
-                bean[variableName] = SpringButJs.inject(beanName);
-            }
-        });
+        return result;
     }
 
-    else {
-        annotationController.throwError('Line "' + applicableLine.toString() + '" is not autowireable!');
-    }
-}
-
-function create(SpringButJs) {
-    let aliases = ['Autowired', 'Inject'];
-
-    aliases.forEach(alias => {
-        SpringButJs.createAnnotation(
-            alias, 
-            annotationController => parse(annotationController, SpringButJs), 
-            'Automatically sets variable values based on available beans.'
-        );
+    [   
+        name1, name2, name3, name4, name5, 
+        name6, name7, name8, name9, name10
+    ].forEach(name => {
+        if(name != null) {
+            customBeanNames.push(name);
+        }
     });
 }
 
-module.exports = create;
+module.exports = Autowired;

@@ -1,6 +1,6 @@
 {
   "name": "spring-but-js",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Use features of the Spring Framework in NodeJS!",
   "main": "index.js",
   "scripts": {
@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "express": "^4.16.3",
-    "opn": "^5.3.0"
+    "opn": "^5.3.0",
+    "uuid": "^3.2.1"
   }
 }

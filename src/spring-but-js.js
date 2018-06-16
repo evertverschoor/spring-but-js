@@ -7,67 +7,76 @@
 
 const 
     AnnotationRegistry = require('./annotation-subsystem/annotation-registry'),
-    AnnotationParser = require('./annotation-subsystem/annotation-parser'),
+    MetadataManager = require('./annotation-subsystem/metadata-manager'),
     BeanPool = require('./bean-pool'),
-    ComponentScanner = require('./annotation-subsystem/component-scanner'),
-    WebServer = require('./web-server/web-server'),
+    JsFileScanner = require('./annotation-subsystem/js-file-scanner'),
     Logger = require('./logger'),
-    ProfileManager = require('./profile-manager');
+    ProfileManager = require('./profile-manager'),
+    Parseable = require('./annotation-subsystem/parseable');
 
 function SpringButJs() {
 
     const
-        springButJs = this,
         logger = new Logger(),
         annotationRegistry = new AnnotationRegistry(logger),
-        parser = new AnnotationParser(annotationRegistry, logger),
-        beanPool = new BeanPool(logger),
-        componentScanner = new ComponentScanner(parser, logger),
-        webServer = new WebServer(logger, beanPool),
-        profileManager = new ProfileManager(logger);
-
-    this.createAnnotation = annotationRegistry.createAnnotation;
-    this.createBean = beanPool.addBean;
-    this.createProvider = beanPool.addProvider;
-    this.inject = beanPool.getBean;
-    this.hasBean = beanPool.beanExists;
-    this.waitForBean = beanPool.waitForBean;
+        metadataManager = new MetadataManager(annotationRegistry, logger),
+        profileManager = new ProfileManager(logger),
+        beanPool = new BeanPool(logger, metadataManager, profileManager),
+        jsFileScanner = new JsFileScanner(logger);
+        
     this.scanComponents = scanComponents;
-    this.printAvailableAnnotations = annotationRegistry.printAvailableAnnotations;
-    this.openBrowser = webServer.openBrowser;
-    this.setPort = webServer.setPort;
-    this.getPort = webServer.getPort;
-    this.isServerRunning = webServer.isServerRunning;
-    this.disableLogging = logger.disable;
-    this.enableLogging = logger.enable;
-    this.setProfile = profileManager.setProfile;
-    this.shutDown = shutDown;
+    this.logger = logger;
 
     function onLoad() {
         // Load all annotations
-        require('./annotations/autowired')(springButJs);
-        require('./annotations/component')(springButJs, logger);
-        require('./annotations/bean')(springButJs, logger);
-        require('./annotations/controller')(springButJs, webServer, logger);
-        require('./annotations/request-mapping')(springButJs, webServer, logger);
-        require('./annotations/post-construct')(springButJs, webServer, logger);
-        require('./annotations/profile')(springButJs, profileManager);
-
-        // Parse cargs
-        profileManager.parseCommandLineArguments(process.argv);
+        annotationRegistry.register(require('./annotations/autowired'));
+        annotationRegistry.register(require('./annotations/service'));
+        annotationRegistry.register(require('./annotations/repository'));
+        annotationRegistry.register(require('./annotations/configuration'));
+        annotationRegistry.register(require('./annotations/rest-controller'));
+        annotationRegistry.register(require('./annotations/bean'));
+        annotationRegistry.register(require('./annotations/profile'));
+        annotationRegistry.register(require('./annotations/post-construct'));
+        annotationRegistry.register(require('./annotations/request-mapping'));
     }
 
-    function scanComponents(directory) {
+    function scanComponents(directory, commandLineArguments) {
+        profileManager.parseCommandLineArguments(commandLineArguments);
+
         return new Promise((resolve, reject) => {
-            componentScanner.scanDirectory(directory).then(() => {
-                webServer.launchEndpoints();
+            jsFileScanner.getJsContentsInDirectory(directory).then(contents => {
+                const 
+                    components = [],
+                    ids = [];
+
+                contents.forEach(c => {
+                    const parseable = new Parseable(c);
+                    if(parseable.canBeComponent()) {
+                        metadataManager.parseForMetadata(parseable);
+
+                        const 
+                            id = parseable.getId(),
+                            Type = parseable.getFunction(),
+                            componentMaybe = beanPool.processType(Type, id);
+
+                        if(componentMaybe) {
+                            components.push(componentMaybe);
+                            ids.push(Type.name + ':' + id);
+                        }
+                    }
+                });
+
+                for(let i = 0; i < components.length; i++) {
+                    beanPool.processBeansOfInstance(components[i], ids[i]);
+                }
+
+                for(let i = 0; i < components.length; i++) {
+                    beanPool.processInstance(components[i], ids[i]);
+                }
+
                 resolve();
             }).catch(reject);
         });
-    }
-
-    function shutDown() {
-        webServer.stopServer();
     }
 
     onLoad();

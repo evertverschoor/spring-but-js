@@ -5,121 +5,164 @@
 //  as published by Sam Hocevar. See the COPYING file for more details.     //
 // ------------------------------------------------------------------------ //
 
-const express = require('express');
+const 
+    express = require('express');
 
-function BeanPool(_logger) {
+function BeanPool(_logger, _metadataManager, _profileManager) {
 
     const 
         logger = _logger,
-        pool = {},
-        providers = {};
+        metadataManager = _metadataManager,
+        profileManager = _profileManager,
+        beans = {};
 
-    this.addBean = addBean;
-    this.addProvider = addProvider;
+    this.processType = processType;
+    this.processBeansOfInstance = processBeansOfInstance;
+    this.processInstance = processInstance;
     this.getBean = getBean;
-    this.beanExists = beanExists;
-    this.waitForBean = waitForBean;
 
-    function isValidName(name) {
-        return typeof name === 'string';
-    }
+    /**
+     * Create an instance of a given type and register it as a bean if the current profile allows it.
+     */
+    function processType(Type, id) {
+        const metadata = metadataManager.getMetadata(Type.name + ':' + id);
 
-    function addBean(name, value) {
-        name = name.toLowerCase();
-
-        if(isValidName(name)) {
-            if(pool[name] == null) {
-                pool[name] = value;
-                logger.log('Created bean with name: ' + name);
-            } else {
-                logger.error(
-                    'A bean called "' + name + '" already exists!\n' + 
-                    '(are you defining more than one @Component in a single file?)'
-                );
+        if(metadata.Profile) {
+            if(!requirementsMatchCurrentSession(metadata.Profile)) {
+                return null;
             }
-        } else {
-            logger.error('"' + name + '" is an invalid bean name!');
         }
+
+        let instance = null;
+
+        if(metadata.Service || metadata.Repository || metadata.Configuration || metadata.RestController) {
+            instance = new Type();
+            addBean(Type.name, instance);
+        }
+
+        return instance;
     }
 
-    function addProvider(name, providerFunction) {
-        name = name.toLowerCase();
+    /**
+     * Handle an instance's @Bean definitions and create beans for them.
+     */
+    function processBeansOfInstance(instance, componentNameWithId) {
+        doForEachMemberOfInstanceWithMetadata(instance, componentNameWithId, (member, metadata) => {
+            if(typeof instance[member] === 'function') {
 
-        if(isValidName(name)) {
-            if(pool[name] == null && providers[name] == null) {
-                providers[name] = providerFunction;
-            } else {
-                logger.error(
-                    'A bean called "' + name + '" already exists!\n' + 
-                    '(are you defining more than one @Component in a single file?)'
-                );
+                if(metadata.Bean) {
+                    const beanName = metadata.Bean.hasCustomBeanName() ? metadata.Bean.customBeanName : member;
+                    addBean(beanName, instance[member]());
+                }
             }
-        } else {
-            logger.error('"' + name + '" is an invalid bean name!');
-        }
+        });
     }
 
-    function beanNameIsRequireable(name) {
-        try {
-            require(name);
-            return true;
-        } catch(err) {
+    /**
+     * Handle an instance's members' metadata and inject where needed.
+     */
+    function processInstance(instance, componentNameWithId) {
+
+        // Handle each @Autowired
+        doForEachMemberOfInstanceWithMetadata(instance, componentNameWithId, (member, metadata) => {
+            if(metadata.Autowired) {
+                if(typeof instance[member] === 'function') {
+                    const parameters = [];
+    
+                    if(metadata.Autowired.hasCustomBeanNames()) {
+                        for(let name of metadata.Autowired.customBeanNames) {
+                            parameters.push(getBean(name));
+                        }
+                    } else {
+                        metadata.Autowired.getFunctionParameterNames(instance[member]).forEach(p => {
+                            parameters.push(getBean(p));
+                        });
+                    }
+    
+                    instance[member].apply(instance, parameters);
+                } else {
+                    const beanName = metadata.Autowired.hasCustomBeanNames() ? 
+                                            metadata.Autowired.customBeanNames[0] : member;
+                    
+                    instance[member] = getBean(beanName);
+                }
+            }
+        });
+
+        // Handle each @PostConstruct
+        doForEachMemberOfInstanceWithMetadata(instance, componentNameWithId, (member, metadata) => {
+            if(typeof instance[member] === 'function') {
+
+                if(metadata.PostConstruct) {
+                    instance[member]();
+                }
+            }
+        });
+    }
+
+    /**
+     * For each member of the given instance, call the given callback with that member's metadata.
+     */
+    function doForEachMemberOfInstanceWithMetadata(instance, componentNameWithId, callback) {
+        Object.keys(instance).forEach(member => {
+            const metadata = metadataManager.getMetadata(componentNameWithId + '.' + member);
+            
+            if(metadata != null) {
+                callback(member, metadata);
+            }
+        });
+    }
+
+    /**
+     * Determine if profile requirements match the current profile.
+     */
+    function requirementsMatchCurrentSession(requirements) {
+        const currentProfile = profileManager.getProfile();
+
+        if(requirements.dontRunOnProfiles.indexOf(currentProfile) > -1) {
             return false;
+        } else if(requirements.runOnProfiles.length > 0 && requirements.runOnProfiles.indexOf(currentProfile) < 0) {
+            return false;
+        } else {
+            return true;
         }
     }
 
-    function isExpressBean(name) {
-        return name == 'app' || name == 'express';
-    }
-
+    /**
+     * Return a bean with the given name from the bean pool.
+     */
     function getBean(name) {
-        name = name.toLowerCase();
+        name = getNormalizedBeanName(name);
 
-        if(pool[name] != null) {
-            return pool[name];
-        } else if(providers[name] != null) {
-            addBean(name, providers[name]());
-            return pool[name];
-        } else if(isExpressBean(name)) {
-            addBean('express', express);
-            addBean('app', express());
-
-            return getBean(name);
-        } else if(beanNameIsRequireable(name)) {
-            addBean(name, require(name));
-            return pool[name];
+        if(beans[name] != null) {
+            return beans[name];
         } else {
-            logger.error('No bean called "' + name + '" exists!');
+            throw 'No bean called "' + name + '" exists!';
         }
     }
 
-    function beanExists(name) {
-        name = name.toLowerCase();
+    /**
+     * Add a bean to the bean pool with the given name and value.
+     */
+    function addBean(name, value) {
+        name = getNormalizedBeanName(name);
 
-        if(pool[name] != null) {
-            return true;
-        } else if(providers[name] != null) {
-            return true;
+        if(beans[name] == null) {
+            beans[name] = value;
+            logger.info('Created bean "' + name + '".');
         } else {
-            return false;
+            throw 'A bean called "' + name + '" already exists!';
         }
     }
 
-    function waitForBean(name, callback) {
-        let maxTries = 10,
-            currentTries = 0;
+    function getNormalizedBeanName(name) {
+        let returnValue = name = name.trim().toLowerCase();
 
-        const checker = setInterval(() => {
-            if(currentTries >= maxTries) {
-                logger.warn('Timed out waiting for bean: "' + name + '"!');
-                clearInterval(checker);
-            } else if(beanExists(name)) {
-                callback(getBean(name));
-                clearInterval(checker);
-            } else {
-                currentTries++;
-            }
-        }, 5);
+        if(returnValue.substring(0, 1) == '_') {
+            returnValue = returnValue.replace('_', '');
+        }
+
+        return returnValue;
     }
 }
 

@@ -1,3 +1,10 @@
+// ------------------------------------------------------------------------ //
+//  Copyright © 2018 Evert Verschoor                                        //
+//  This work is free. You can redistribute it and/or modify it under the   //
+//  terms of the Do What The Fuck You Want To Public License, Version 2,    //
+//  as published by Sam Hocevar. See the COPYING file for more details.     //
+// ------------------------------------------------------------------------ //
+
 function ProfileManager(_logger) {
 
     const logger = _logger;
@@ -5,7 +12,7 @@ function ProfileManager(_logger) {
     let currentProfile;
 
     this.parseCommandLineArguments = parseCommandLineArguments;
-    this.isCurrentProfile = isCurrentProfile;
+    this.getProfile = getProfile;
     this.setProfile = setProfile;
 
     function parseCommandLineArguments(args) {
@@ -24,8 +31,8 @@ function ProfileManager(_logger) {
         }
     }
 
-    function isCurrentProfile(profile) {
-        return currentProfile != null && currentProfile == profile;
+    function getProfile() {
+        return currentProfile;
     }
 
     function setProfile(profile) {

@@ -5,11 +5,9 @@
 //  as published by Sam Hocevar. See the COPYING file for more details.     //
 // ------------------------------------------------------------------------ //
 
-function RequestMapping(url, method) {
+function Repository() {
 
-    this.isRequestHandler = true;
-    this.url = url || '/';
-    this.method = method || 'GET';
+    this.isComponent = true;
 }
 
-module.exports = RequestMapping;
+module.exports = Repository;
