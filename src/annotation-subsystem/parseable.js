@@ -89,7 +89,12 @@ function Parseable(_functionAsString) {
         });
 
         if(canBeComponent()) {
-            const functionProvider = new Function(functionAsString + '\n\nreturn ' + functionName + ';');
+            const functionProvider = new Function(
+                'var module = {};\n\n' + 
+                functionAsString + 
+                '\n\nreturn ' + functionName + ';'
+            );
+
             try {
                 functionAsFunction = functionProvider();
             } catch(err) {
