@@ -8,12 +8,13 @@
 const 
     express = require('express');
 
-function BeanPool(_logger, _metadataManager, _profileManager) {
+function BeanPool(_logger, _metadataManager, _profileManager, _webServer) {
 
     const 
         logger = _logger,
         metadataManager = _metadataManager,
         profileManager = _profileManager,
+        webServer = _webServer,
         beans = {};
 
     this.processType = processType;
@@ -35,7 +36,9 @@ function BeanPool(_logger, _metadataManager, _profileManager) {
 
         let instance = null;
 
-        if(metadata.Service || metadata.Repository || metadata.Configuration || metadata.RestController) {
+        if(metadata.Service || metadata.Repository || 
+            metadata.Configuration || metadata.RestController || metadata.Component) {
+                
             instance = new Type();
             addBean(Type.name, instance);
         }
@@ -89,6 +92,11 @@ function BeanPool(_logger, _metadataManager, _profileManager) {
             }
         });
 
+        // Handle each @RestController and @RequestMapping annotation if applicable
+        if(metadataManager.getMetadata(componentNameWithId).RestController) {
+            processInstanceAsController(instance, componentNameWithId);
+        }
+
         // Handle each @PostConstruct
         doForEachMemberOfInstanceWithMetadata(instance, componentNameWithId, (member, metadata) => {
             if(typeof instance[member] === 'function') {
@@ -98,6 +106,39 @@ function BeanPool(_logger, _metadataManager, _profileManager) {
                 }
             }
         });
+    }
+
+    /**
+     * Handle a controller instance's @RequestMapping definitions and create endpoints for them.
+     */
+    function processInstanceAsController(instance, componentNameWithId) {
+        if(webServer.isServerRunning()) {
+            const controllerMetadata = metadataManager.getMetadata(componentNameWithId);
+            let endpointPrefix = '';
+            
+            if(controllerMetadata.RequestMapping) {
+                endpointPrefix = controllerMetadata.RequestMapping.url;
+            }
+
+            // member-level @RequestMapping
+            doForEachMemberOfInstanceWithMetadata(instance, componentNameWithId, (member, metadata) => {
+                if(typeof instance[member] === 'function') {
+
+                    if(metadata.RequestMapping) {
+                        webServer.registerEndpoint(
+                            endpointPrefix + metadata.RequestMapping.url, 
+                            metadata.RequestMapping.method,
+                            instance[member]
+                        );
+                    }
+                }
+            });
+        } else {
+            webServer.setExpressBeans(getBean('express'), getBean('app'));
+            webServer.start();
+
+            setTimeout(() => processInstanceAsController(instance, componentNameWithId), 5);
+        }
     }
 
     /**
@@ -136,6 +177,12 @@ function BeanPool(_logger, _metadataManager, _profileManager) {
 
         if(beans[name] != null) {
             return beans[name];
+        } else if(isExpressBean(name)) {
+            createExpressBeans();
+            return getBean(name);
+        } else if(isRequireableBean(name)) {
+            addBean(name, require(name));
+            return getBean(name);
         } else {
             throw 'No bean called "' + name + '" exists!';
         }
@@ -151,6 +198,7 @@ function BeanPool(_logger, _metadataManager, _profileManager) {
             beans[name] = value;
             logger.info('Created bean "' + name + '".');
         } else {
+            console.log('OH NO!');
             throw 'A bean called "' + name + '" already exists!';
         }
     }
@@ -163,6 +211,29 @@ function BeanPool(_logger, _metadataManager, _profileManager) {
         }
 
         return returnValue;
+    }
+
+    function isExpressBean(name) {
+        return name == 'app' || name == 'express';
+    }
+
+    function isRequireableBean(name) {
+        try {
+            require(name);
+            return true;
+        } catch(err) {
+            return false;
+        }
+}
+
+    function createExpressBeans() {
+        const app = express();
+
+        addBean('express', express);
+        addBean('app', app);
+
+        webServer.setExpressBeans(express, app)
+        webServer.start(app);
     }
 }
 

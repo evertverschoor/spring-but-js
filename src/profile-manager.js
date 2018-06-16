@@ -16,13 +16,15 @@ function ProfileManager(_logger) {
     this.setProfile = setProfile;
 
     function parseCommandLineArguments(args) {
-        if(args.length > 2) {
+        if(args != null && args.length > 2) {
             args.forEach(arg => {
                 if(arg.indexOf('--profile=') == 0) {
                     currentProfile = arg.replace('--profile=', '');
                 }
             });
         }
+
+        
 
         if(currentProfile != null) {
             logger.info('Using profile "' + currentProfile + '".');

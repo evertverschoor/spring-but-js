@@ -10,7 +10,7 @@ const
     SpringButJsInstance = new SpringButJsType(),
     SPEC_COUNT = 4; // <= Keep this up to date!
 
-SpringButJsInstance.disableLogging();
+SpringButJsInstance.logger.disable();
 let isComponentsScanned = false,
     finishedSpecCount = 0;
 
@@ -50,7 +50,9 @@ describe('SpringButJs - autowiring components', () => {
     it('should autowire the right beans depending on the profile', done => {
         scanComponents().then(() => {
             expect(SpringButJsInstance.inject('ProfileTestBean')).toEqual(1);
-            expect(SpringButJsInstance.inject('TestProfiled2Configuration')).toBeUndefined();
+            expect(() => { 
+                SpringButJsInstance.inject('TestProfiled2Configuration');
+            }).toThrow();
 
             onSpecFinished();
             done();
@@ -62,7 +64,7 @@ describe('SpringButJs - autowiring components', () => {
 function onSpecFinished() {
     finishedSpecCount++;
     if(finishedSpecCount >= SPEC_COUNT) {
-        SpringButJsInstance.shutDown();
+        SpringButJsInstance.quit();
     }
 }
 

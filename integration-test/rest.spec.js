@@ -11,7 +11,7 @@ const
     http = require('http'),
     SPEC_COUNT = 8; // <= Keep this up to date!
 
-SpringButJsInstance.disableLogging();
+SpringButJsInstance.logger.disable();
 let isComponentsScanned = false,
     finishedSpecCount = 0;
 
@@ -102,7 +102,7 @@ describe('SpringButJs - creating REST endpoints', () => {
 function onSpecFinished() {
     finishedSpecCount++;
     if(finishedSpecCount >= SPEC_COUNT) {
-        SpringButJsInstance.shutDown();
+        SpringButJsInstance.quit();
     }
 }
 

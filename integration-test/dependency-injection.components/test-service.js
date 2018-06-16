@@ -1,14 +1,13 @@
 '@Service'
 function TestService() {
 
-    '@Autowired'
-    let https;
-
-    let rimraf;
+    let https,
+        rimraf;
 
     '@Autowired'
-    this.setRimraf = function(_rimraf) {
+    this.setRimraf = function(_rimraf, _https) {
         rimraf = _rimraf;
+        https = _https;
     }
 
     this.getHello = function() {

@@ -19,7 +19,7 @@ Below is a small project that makes use of SpringButJs, showcasing simple IoC an
 ### main.js
 ``` javascript
 const SpringButJs = require('spring-but-js');
-SpringButJs.scanComponents('components');
+SpringButJs.scanComponents('components', process.argv);
 ```
 
 ### components/my-service.js
@@ -39,8 +39,12 @@ function MyService() {
 '@RequestMapping("/hello")'
 function MyController() {
 
-    '@Autowired'
     let myService;
+    
+    '@Autowired'
+    this.setMyService = function(_myServive) {
+        myService = _myService;
+    }
 
     '@RequestMapping("/")'
     this.myOtherFunction = function(req, res) {

@@ -8,6 +8,7 @@
 const 
     AnnotationRegistry = require('./annotation-subsystem/annotation-registry'),
     MetadataManager = require('./annotation-subsystem/metadata-manager'),
+    WebServer = require('./web-server'),
     BeanPool = require('./bean-pool'),
     JsFileScanner = require('./annotation-subsystem/js-file-scanner'),
     Logger = require('./logger'),
@@ -21,15 +22,25 @@ function SpringButJs() {
         annotationRegistry = new AnnotationRegistry(logger),
         metadataManager = new MetadataManager(annotationRegistry, logger),
         profileManager = new ProfileManager(logger),
-        beanPool = new BeanPool(logger, metadataManager, profileManager),
+        webServer = new WebServer(logger),
+        beanPool = new BeanPool(logger, metadataManager, profileManager, webServer),
         jsFileScanner = new JsFileScanner(logger);
         
     this.scanComponents = scanComponents;
+    this.inject = beanPool.getBean;
     this.logger = logger;
+    this.openBrowser = webServer.openBrowser;
+    this.isServerRunning = webServer.isServerRunning;
+    this.getPort = webServer.getPort;
+    this.setPort = webServer.setPort;
+    this.getProfile = profileManager.getProfile;
+    this.setProfile = profileManager.setProfile;
+    this.quit = webServer.stop;
 
     function onLoad() {
         // Load all annotations
         annotationRegistry.register(require('./annotations/autowired'));
+        annotationRegistry.register(require('./annotations/component'));
         annotationRegistry.register(require('./annotations/service'));
         annotationRegistry.register(require('./annotations/repository'));
         annotationRegistry.register(require('./annotations/configuration'));
@@ -69,7 +80,7 @@ function SpringButJs() {
                 for(let i = 0; i < components.length; i++) {
                     beanPool.processBeansOfInstance(components[i], ids[i]);
                 }
-
+                
                 for(let i = 0; i < components.length; i++) {
                     beanPool.processInstance(components[i], ids[i]);
                 }

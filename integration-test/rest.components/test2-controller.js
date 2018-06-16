@@ -1,4 +1,4 @@
-'@Controller'
+'@RestController'
 function Test2Controller() {
 
     '@RequestMapping("/test2/hello", "GET")'

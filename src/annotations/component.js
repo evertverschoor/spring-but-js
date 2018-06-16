@@ -5,17 +5,9 @@
 //  as published by Sam Hocevar. See the COPYING file for more details.     //
 // ------------------------------------------------------------------------ //
 
-function Bean(_name) {
+function Component() {
 
-    const customBeanName = _name || null;
-
-    this.isBean = true;
-    this.customBeanName = customBeanName;
-    this.hasCustomBeanName = hasCustomBeanName;
-
-    function hasCustomBeanName() {
-        return customBeanName != null && customBeanName.length > 0;
-    }
+    this.isComponent = true;
 }
 
-module.exports = Bean;
+module.exports = Component;
