@@ -54,8 +54,16 @@ function BeanPool(_logger, _metadataManager, _profileManager, _webServer) {
             if(typeof instance[member] === 'function') {
 
                 if(metadata.Bean) {
+                    const parameters = [];
+
+                    metadata.Bean.getFunctionParameterNames(instance[member]).forEach(p => {
+                        parameters.push(getBean(p));
+                    });
+
                     const beanName = metadata.Bean.hasCustomBeanName() ? metadata.Bean.customBeanName : member;
-                    addBean(beanName, instance[member]());
+                    const result = instance[member].apply(instance, parameters);
+                    
+                    addBean(beanName, result);
                 }
             }
         });

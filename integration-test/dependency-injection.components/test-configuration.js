@@ -7,7 +7,10 @@ function TestConfiguration() {
     }
 
     '@Bean'
-    this.bar = function() {
+    this.bar = function(_rimraf) {
+        if(_rimraf == null) {
+            throw 'Rimraf is null at a @Bean declaration!';
+        }
         return 'bar';
     }
 }
