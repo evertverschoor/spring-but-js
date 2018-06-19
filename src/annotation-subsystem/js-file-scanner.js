@@ -5,7 +5,9 @@
 //  as published by Sam Hocevar. See the COPYING file for more details.     //
 // ------------------------------------------------------------------------ //
 
-const fs = require('fs');
+const 
+    fs = require('fs'),
+    path = require('path');
 
 function JsFileScanner(_logger) {
 
@@ -38,9 +40,42 @@ function JsFileScanner(_logger) {
         return file.split('').reverse().join('').indexOf('sj.') == 0;
     }
 
+    function walkDirectoryAsync(dir, done) {
+        let results = [];
+    
+        fs.readdir(dir, function(err, list) {
+            if (err) return done(err);
+    
+            var pending = list.length;
+    
+            if (!pending) return done(null, results);
+    
+            list.forEach(function(file){
+                file = path.resolve(dir, file);
+    
+                fs.stat(file, function(err, stat){
+                    // If directory, execute a recursive call
+                    if (stat && stat.isDirectory()) {
+                        // Add directory to array [comment if you need to remove the directories from the array]
+                        results.push(file);
+    
+                        walkDirectoryAsync(file, function(err, res){
+                            results = results.concat(res);
+                            if (!--pending) done(null, results);
+                        });
+                    } else {
+                        results.push(file);
+    
+                        if (!--pending) done(null, results);
+                    }
+                });
+            });
+        });
+    };
+
     function getJsContentsInDirectory(path) {
         return new Promise((resolve, reject) => {
-            fs.readdir(path, (err, files) => {
+            walkDirectoryAsync(path, (err, files) => {
                 if(err) {
                     logger.error(err);
                 } else {
@@ -49,7 +84,7 @@ function JsFileScanner(_logger) {
 
                     files = files.filter(f => isJsFile(f));
                     files.forEach(file => {
-                        readFile(path + '/' + file).then(f => {
+                        readFile(file).then(f => {
                             checkSyntax(f);
 
                             returnValue.push(f.toString());

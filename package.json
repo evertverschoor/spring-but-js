@@ -1,6 +1,6 @@
 {
   "name": "spring-but-js",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "description": "Use features of the Spring Framework in NodeJS!",
   "main": "index.js",
   "scripts": {
@@ -12,7 +12,9 @@
     "dependency injection",
     "annotations",
     "spring",
-    "rest"
+    "rest",
+    "spring-boot",
+    "DI"
   ],
   "repository": {
     "type": "git",
