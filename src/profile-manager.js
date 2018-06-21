@@ -24,8 +24,6 @@ function ProfileManager(_logger) {
             });
         }
 
-        
-
         if(currentProfile != null) {
             logger.info('Using profile "' + currentProfile + '".');
         } else {

@@ -20,6 +20,7 @@ describe('SpringButJs - autowiring components', () => {
         scanComponents().then(() => {
             expect(SpringButJsInstance.inject('TestService').hasRimrafAvailable()).toBe(true);
             expect(SpringButJsInstance.inject('TestService').hasHttpsAvailable()).toBe(true);
+            expect(SpringButJsInstance.inject('TestService').hasNodeJsGlobalsAvailable()).toBe(true);
             expect(SpringButJsInstance.inject('TestComponent').getHello()).toEqual(
                 'Hello from TestComponent! Hello from TestService! Hello from TestRepository!'
             );

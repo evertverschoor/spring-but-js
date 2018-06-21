@@ -18,6 +18,7 @@ const
 function SpringButJs() {
 
     const
+        self = this,
         logger = new Logger(),
         annotationRegistry = new AnnotationRegistry(logger),
         metadataManager = new MetadataManager(annotationRegistry, logger),
@@ -31,6 +32,7 @@ function SpringButJs() {
     this.logger = logger;
     this.openBrowser = webServer.openBrowser;
     this.isServerRunning = webServer.isServerRunning;
+    this.onEndpointRegistered = webServer.onEndpointRegistered;
     this.getPort = webServer.getPort;
     this.setPort = webServer.setPort;
     this.getProfile = profileManager.getProfile;
@@ -49,42 +51,49 @@ function SpringButJs() {
         annotationRegistry.register(require('./annotations/profile'));
         annotationRegistry.register(require('./annotations/post-construct'));
         annotationRegistry.register(require('./annotations/request-mapping'));
+
+        beanPool.addBean('SpringButJs', self);
+    }
+
+    function parseSpringButJsFiles(files) {
+        const 
+            components = [],
+            ids = [];
+
+            files.forEach(f => {
+            const parseable = new Parseable(f.content, f.filePath);
+            if(parseable.canBeComponent()) {
+                metadataManager.parseForMetadata(parseable);
+
+                const 
+                    id = parseable.getId(),
+                    Type = parseable.getFunction(),
+                    componentMaybe = beanPool.processType(Type, id);
+
+                if(componentMaybe) {
+                    const metadataId = Type.name + ':' + id;
+
+                    components.push(componentMaybe);
+                    ids.push(metadataId);
+                }
+            }
+        });
+
+        for(let i = 0; i < components.length; i++) {
+            beanPool.processBeansOfInstance(components[i], ids[i]);
+        }
+        
+        for(let i = 0; i < components.length; i++) {
+            beanPool.processInstance(components[i], ids[i]);
+        }
     }
 
     function scanComponents(directory, commandLineArguments) {
         profileManager.parseCommandLineArguments(commandLineArguments);
 
         return new Promise((resolve, reject) => {
-            jsFileScanner.getJsContentsInDirectory(directory).then(contents => {
-                const 
-                    components = [],
-                    ids = [];
-
-                contents.forEach(c => {
-                    const parseable = new Parseable(c);
-                    if(parseable.canBeComponent()) {
-                        metadataManager.parseForMetadata(parseable);
-
-                        const 
-                            id = parseable.getId(),
-                            Type = parseable.getFunction(),
-                            componentMaybe = beanPool.processType(Type, id);
-
-                        if(componentMaybe) {
-                            components.push(componentMaybe);
-                            ids.push(Type.name + ':' + id);
-                        }
-                    }
-                });
-
-                for(let i = 0; i < components.length; i++) {
-                    beanPool.processBeansOfInstance(components[i], ids[i]);
-                }
-                
-                for(let i = 0; i < components.length; i++) {
-                    beanPool.processInstance(components[i], ids[i]);
-                }
-
+            jsFileScanner.getJsContentsInDirectory(directory).then(files => {
+                parseSpringButJsFiles(files);
                 resolve();
             }).catch(reject);
         });

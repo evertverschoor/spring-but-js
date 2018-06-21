@@ -9,12 +9,13 @@ const
     Line = require('./line'),
     uuid = require('uuid/v1');
 
-function Parseable(_functionAsString) {
+function Parseable(_functionAsString, _filePath) {
 
     const 
         functionAsString = _functionAsString,
         lines = [],
-        id = uuid();
+        id = uuid(),
+        filePath = _filePath;
 
     let functionAsFunction = null,
         functionName = null;
@@ -25,6 +26,8 @@ function Parseable(_functionAsString) {
     this.hasAnnotation = hasAnnotation;
     this.getFunction = getFunction;
     this.getId = getId;
+    this.getFileName = getFileName;
+    this.getDirName = getDirName;
 
     /**
      * Return true if a function expression is encountered in this parseable.
@@ -83,14 +86,26 @@ function Parseable(_functionAsString) {
         return id;
     }
 
+    function getFileName() {
+        return filePath;
+    }
+
+    function getDirName() {
+        return getFileName().substring(0, getFileName().lastIndexOf('/'));
+    }
+
     function initialize() {
         functionAsString.split('\n').forEach(l => {
             lines.push(new Line(l));
         });
 
         if(canBeComponent()) {
+            const header =  'var module = {};\n' + 
+                            'const __dirname = "' + getDirName() + '",\n' + 
+                            '__filename = "' + getFileName() + '";';
+
             const functionProvider = new Function(
-                'var module = {};\n\n' + 
+                header + '\n\n' + 
                 functionAsString + 
                 '\n\nreturn ' + functionName + ';'
             );

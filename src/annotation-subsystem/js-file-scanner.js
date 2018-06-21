@@ -7,13 +7,15 @@
 
 const 
     fs = require('fs'),
-    path = require('path');
+    path = require('path'),
+    SpringButJsFile = require('../sbj-file');
 
 function JsFileScanner(_logger) {
 
     const logger = _logger;
 
     this.getJsContentsInDirectory = getJsContentsInDirectory;
+    this.getJsFile = getJsFile;
 
     function readFile(path) {
         return new Promise((resolve, reject) => {
@@ -87,7 +89,9 @@ function JsFileScanner(_logger) {
                         readFile(file).then(f => {
                             checkSyntax(f);
 
-                            returnValue.push(f.toString());
+                            returnValue.push(
+                                new SpringButJsFile(file, f.toString())
+                            );
 
                             parsedFiles++;
                             if(parsedFiles >= files.length) {
@@ -102,6 +106,20 @@ function JsFileScanner(_logger) {
                             }
                         });
                     });
+                }
+            });
+        });
+    }
+
+    function getJsFile(filePath) {
+        return new Promise((resolve, reject) => {
+            fs.readFile(filePath, 'utf-8', (err, data) => {
+                if(err) {
+                    reject(err);
+                } else {
+                    resolve(
+                        new SpringButJsFile(path.resolve(filePath), data)
+                    );
                 }
             });
         });

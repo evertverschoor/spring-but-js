@@ -21,6 +21,7 @@ function BeanPool(_logger, _metadataManager, _profileManager, _webServer) {
     this.processBeansOfInstance = processBeansOfInstance;
     this.processInstance = processInstance;
     this.getBean = getBean;
+    this.addBean = addBean;
 
     /**
      * Create an instance of a given type and register it as a bean if the current profile allows it.
@@ -206,7 +207,6 @@ function BeanPool(_logger, _metadataManager, _profileManager, _webServer) {
             beans[name] = value;
             logger.info('Created bean "' + name + '".');
         } else {
-            console.log('OH NO!');
             throw 'A bean called "' + name + '" already exists!';
         }
     }

@@ -6,9 +6,13 @@ function TestComponent() {
     '@Autowired'
     this.testService = null;
 
-    '@Autowired("TestRepository")'
-    this.setMyTestRepository = function(someOtherName) {
+    '@Autowired("TestRepository", "SpringButJs")'
+    this.setMyTestRepository = function(someOtherName, _springButJs) {
         myTestRepository = someOtherName;
+
+        if(_springButJs == null) {
+            throw 'SpringButJs was not properly autowired!';
+        }
     }
 
     this.getHello = function() {

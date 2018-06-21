@@ -14,7 +14,10 @@
     "spring",
     "rest",
     "spring-boot",
-    "DI"
+    "DI",
+    "framework",
+    "web",
+    "rest"
   ],
   "repository": {
     "type": "git",

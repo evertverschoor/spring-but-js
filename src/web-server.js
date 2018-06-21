@@ -16,7 +16,8 @@ function WebServer(_logger) {
         server,
         port = DEFAULT_PORT,
         startCommenced = false,
-        actualPortReceived = false;
+        actualPortReceived = false,
+        onEndpointRegisteredCallbacks = [];
 
     this.start = start;
     this.stop = stop;
@@ -24,6 +25,7 @@ function WebServer(_logger) {
     this.getPort = getPort;
     this.setExpressBeans = setExpressBeans;
     this.registerEndpoint = registerEndpoint;
+    this.onEndpointRegistered = onEndpointRegistered;
     this.isServerRunning = isServerRunning;
     this.openBrowser = openBrowser;
 
@@ -69,6 +71,12 @@ function WebServer(_logger) {
         logger.info(
             'Launched new REST endpoint:  ' + method + ' ' + url
         );
+
+        onEndpointRegisteredCallbacks.forEach(c => c(url, method, handler));
+    }
+
+    function onEndpointRegistered(callback) {
+        onEndpointRegisteredCallbacks.push(callback);
     }
 
     function isServerRunning() {

@@ -14,6 +14,10 @@ function TestService() {
         return 'Hello from TestService!';
     }
 
+    this.hasNodeJsGlobalsAvailable = function() {
+        return __dirname != null && __filename != null;
+    }
+
     this.hasRimrafAvailable = function() {
         return rimraf != null && typeof rimraf === 'function';
     }
